@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termo de Responsabilidade - Colaborador</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+    <header class="topbar">
+
+        <div class="brand">
+            <img src="assets/icone-gtm.png" alt="GTM">
+
+            <div class="brand-text">
+                <strong>Termos de Responsabilidade</strong>
+                <span>Área do colaborador</span>
+            </div>
+        </div>
+
+        <button class="btn-secondary" onclick="window.location.href='index.html'">
+            Voltar
+        </button>
+
+    </header>
+
+    <main class="collaborator-container">
+
+        <section class="page-header">
+
+            <div>
+                <h1>Termo de Responsabilidade</h1>
+
+                <p>
+                    Consulte seus equipamentos e preencha seus dados para emissão do termo.
+                </p>
+            </div>
+
+        </section>
+
+        <section class="panel">
+
+            <div class="panel-title">
+                <div>
+                    <h2>Identificação</h2>
+
+                    <p>
+                        Pesquise seu nome para continuar.
+                    </p>
+                </div>
+            </div>
+
+            <div class="search-wrapper">
+
+                <label for="campoBuscaColaborador">
+                    Nome do colaborador
+                </label>
+
+                <input type="text" id="campoBuscaColaborador" placeholder="Digite seu nome..." autocomplete="off">
+
+                <div id="resultadosColaboradores" class="autocomplete-results"></div>
+
+            </div>
+
+        </section>
+
+        <section id="areaColaborador" class="hidden">
+
+            <section class="panel">
+
+                <div class="panel-title">
+
+                    <div>
+                        <h2>Dados pessoais</h2>
+
+                        <p>
+                            Preencha os dados necessários para o termo.
+                        </p>
+                    </div>
+
+                </div>
+
+                <div class="form-grid">
+
+                    <div class="form-group form-group-full">
+
+                        <div class="campo">
+                            <label for="nome">Nome Completo</label>
+                            <input type="text" id="nome" placeholder="Digite seu nome completo" autocomplete="name">
+                        </div>
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="cpf">
+                            CPF
+                        </label>
+
+                        <input type="text" id="cpf" placeholder="000.000.000-00" maxlength="14">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="telefone">
+                            Telefone
+                        </label>
+
+                        <input type="text" id="telefone" placeholder="(00) 00000-0000" maxlength="15">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="cep">
+                            CEP
+                        </label>
+
+                        <input type="text" id="cep" placeholder="00000-000" maxlength="9">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="estado">
+                            Estado
+                        </label>
+
+                        <input type="text" id="estado" placeholder="MG" maxlength="2">
+
+                    </div>
+
+                    <div class="form-group form-group-large">
+
+                        <label for="rua">
+                            Rua
+                        </label>
+
+                        <input type="text" id="rua" placeholder="Nome da rua">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="numero">
+                            Número
+                        </label>
+
+                        <input type="text" id="numero" placeholder="Número">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="bairro">
+                            Bairro
+                        </label>
+
+                        <input type="text" id="bairro" placeholder="Bairro">
+
+                    </div>
+
+                    <div class="form-group">
+
+                        <label for="cidade">
+                            Cidade
+                        </label>
+
+                        <input type="text" id="cidade" placeholder="Cidade">
+
+                    </div>
+
+                </div>
+
+            </section>
+
+            <section class="panel">
+
+                <div class="panel-title">
+
+                    <div>
+                        <h2>Equipamentos</h2>
+
+                        <p>
+                            Equipamentos encontrados no inventário da GTM.
+                        </p>
+                    </div>
+
+                    <span id="quantidadeEquipamentos" class="equipment-count">
+                        0 equipamentos
+                    </span>
+
+                </div>
+
+                <div id="listaEquipamentos" class="equipment-list"></div>
+
+            </section>
+
+            <section class="panel">
+
+                <div class="next-step-box">
+
+                    <div>
+                        <h2>Próxima etapa</h2>
+
+                        <p>
+                            Depois de confirmar seus dados, você poderá visualizar o termo de responsabilidade, conferir
+                            os equipamentos e realizar a assinatura eletrônica.
+                        </p>
+                    </div>
+
+                    <div class="term-actions">
+
+                        <button type="button" id="btnContinuar" class="btn-primary">
+                            Continuar para o termo
+                        </button>
+
+                        <button type="button" id="btnVisualizarTermo" class="btn-secondary hidden">
+                            Visualizar termo
+                        </button>
+
+                        <button type="button" id="btnBaixarTermo" class="btn-secondary hidden">
+                            Baixar termo em PDF
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+        </section>
+
+        <section id="estadoVazio" class="empty-state">
+
+            <div class="empty-icon">
+                👤
+            </div>
+
+            <h2>Pesquise seu nome</h2>
+
+            <p>
+                Digite seu nome acima para localizar seu cadastro e seus equipamentos.
+            </p>
+
+        </section>
+
+        <div id="toast" class="toast"></div>
+
+    </main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script src="js/colaborador.js"></script>
+
+</body>
+
+</html>

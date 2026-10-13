@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Administrador - Termos de Responsabilidade</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="admin-page-loading">
+
+    <header class="topbar">
+
+        <div class="brand">
+
+            <div class="brand">
+                <img
+                    src="assets/icone-gtm.png"
+                    alt="GTM"
+                >
+            </div>
+
+            <div class="brand-subtitle">
+                Termos de Responsabilidade
+            </div>
+
+        </div>
+
+        <div class="topbar-right">
+
+            <span class="access-label">
+                Administrador
+            </span>
+
+            <button
+                class="btn-outline"
+                onclick="window.location.href='index.html'"
+            >
+                Sair
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <main class="admin-container">
+
+        <section class="page-header">
+
+            <div>
+
+                <h1>
+                    Termos de Responsabilidade
+                </h1>
+
+                <p>
+                    Gerencie os colaboradores, equipamentos e assinaturas.
+                </p>
+
+            </div>
+
+
+            <div class="import-area">
+
+                <label
+                    for="arquivoExcel"
+                    class="btn-primary"
+                >
+                    <h4>
+                        Carregar Excel
+                    </h4>
+                </label>
+
+                <input
+                    type="file"
+                    id="arquivoExcel"
+                    accept=".xls,.xlsx"
+                    hidden
+                >
+
+                <span
+                    id="arquivoAtual"
+                    class="file-name"
+                >
+                    Nenhum arquivo carregado
+                </span>
+
+            </div>
+
+        </section>
+
+
+        <section class="stats-grid">
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    Colaboradores
+                </span>
+
+                <strong id="totalColaboradores">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    Assinaram
+                </span>
+
+                <strong id="totalAssinados">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    Não assinaram
+                </span>
+
+                <strong id="totalNaoAssinados">
+                    0
+                </strong>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <span class="stat-label">
+                    Equipamentos
+                </span>
+
+                <strong id="totalEquipamentos">
+                    0
+                </strong>
+
+            </div>
+
+        </section>
+
+
+        <section class="panel">
+
+            <div class="panel-header">
+
+                <div>
+
+                    <h2>
+                        Colaboradores
+                    </h2>
+
+                    <span id="contadorResultados">
+                        0 colaboradores
+                    </span>
+
+                </div>
+
+
+                <div class="filters">
+
+                    <div class="search-box">
+
+                        <input
+                            type="text"
+                            id="campoBusca"
+                            placeholder="Pesquisar colaborador..."
+                            autocomplete="off"
+                            oninput="pesquisarColaboradores()"
+                        >
+
+                    </div>
+
+
+                    <select
+                        id="filtroStatus"
+                        onchange="filtrarPorStatus()"
+                    >
+
+                        <option value="">
+                            Todos
+                        </option>
+
+                        <option value="assinado">
+                            Assinados
+                        </option>
+
+                        <option value="pendente">
+                            Não assinados
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Colaborador
+                            </th>
+
+                            <th>
+                                Equipamentos
+                            </th>
+
+                            <th>
+                                Status
+                            </th>
+
+                            <th>
+                                Assinado em
+                            </th>
+
+                            <th>
+                                Ações
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="tabelaColaboradores">
+                    </tbody>
+
+                </table>
+
+
+                <div
+                    id="estadoVazio"
+                    class="empty-state"
+                >
+
+                    <strong>
+                        Nenhum colaborador encontrado
+                    </strong>
+
+                    <span>
+                        Carregue um arquivo Excel para começar.
+                    </span>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <div
+        id="modalEquipamentos"
+        class="modal-overlay"
+        onclick="fecharModalFora(event)"
+    >
+
+        <div class="modal modal-large">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span class="modal-kicker">
+                        COLABORADOR
+                    </span>
+
+                    <h2 id="modalNomeColaborador">
+                        -
+                    </h2>
+
+                    <div id="modalStatusColaborador">
+                    </div>
+
+                </div>
+
+
+                <button
+                    class="modal-close"
+                    onclick="fecharModalEquipamentos()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <div class="modal-body">
+
+
+                <div class="equipment-summary">
+
+                    <div>
+
+                        <span>
+                            Equipamentos
+                        </span>
+
+                        <strong id="modalTotalEquipamentos">
+                            0
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            Assinatura
+                        </span>
+
+                        <strong id="modalDataAssinatura">
+                            Não assinou
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="signature-details">
+
+                    <div class="signature-details-header">
+
+                        <span class="modal-kicker">
+                            DADOS DA ASSINATURA
+                        </span>
+
+                        <h3>
+                            Informações de autenticação
+                        </h3>
+
+                    </div>
+
+
+                    <div class="equipment-grid">
+
+
+                        <div class="equipment-field">
+
+                            <span>
+                                IP da assinatura
+                            </span>
+
+                            <strong id="modalIPAssinatura">
+                                Não informado
+                            </strong>
+
+                        </div>
+
+
+                        <div class="equipment-field">
+
+                            <span>
+                                Latitude
+                            </span>
+
+                            <strong id="modalLatitude">
+                                Não informada
+                            </strong>
+
+                        </div>
+
+
+                        <div class="equipment-field">
+
+                            <span>
+                                Longitude
+                            </span>
+
+                            <strong id="modalLongitude">
+                                Não informada
+                            </strong>
+
+                        </div>
+
+
+                        <div class="equipment-field">
+
+                            <span>
+                                Precisão da localização
+                            </span>
+
+                            <strong id="modalPrecisaoLocalizacao">
+                                Não informada
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="signature-details">
+
+                    <div class="signature-details-header">
+
+                        <span class="modal-kicker">
+                            DOCUMENTO
+                        </span>
+
+                        <h3>
+                            Documento apresentado na assinatura
+                        </h3>
+
+                    </div>
+
+
+                    <div class="equipment-grid">
+
+
+                        <div class="equipment-field">
+
+                            <span>
+                                Tipo do documento
+                            </span>
+
+                            <strong id="modalTipoDocumento">
+                                -
+                            </strong>
+
+                        </div>
+
+
+                        <div class="equipment-field">
+
+                            <span>
+                                Número do documento
+                            </span>
+
+                            <strong id="modalNomeDocumento">
+                                -
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="document-images-grid">
+
+
+                        <div
+                            id="containerDocumentoFrente"
+                            class="document-image-card"
+                        >
+
+                            <div class="document-image-title">
+                                <h1>Frente do documento</h1>
+                            </div>
+
+                            <div class="document-image-wrapper">
+
+                                <img
+                                    id="modalDocumentoFrente"
+                                    src=""
+                                    alt="Frente do documento"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="containerDocumentoVerso"
+                            class="document-image-card"
+                        >
+
+                            <div class="document-image-title">
+                                Verso do documento
+                            </div>
+
+                            <div class="document-image-wrapper">
+
+                                <img
+                                    id="modalDocumentoVerso"
+                                    src=""
+                                    alt="Verso do documento"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="signature-details">
+
+                    <div class="signature-details-header">
+
+                        <span class="modal-kicker">
+                            EQUIPAMENTOS
+                        </span>
+
+                        <h3>
+                            Equipamentos vinculados
+                        </h3>
+
+                    </div>
+
+
+                    <div
+                        id="listaEquipamentos"
+                        class="equipment-list"
+                    >
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn-outline"
+                    onclick="fecharModalEquipamentos()"
+                >
+                    Fechar
+                </button>
+
+
+                <button
+                    class="btn-primary"
+                    id="btnVisualizarTermo"
+                    onclick="visualizarTermoSelecionado()"
+                >
+                    Visualizar termo
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="modalTermo"
+        class="modal-overlay"
+        onclick="fecharModalTermoFora(event)"
+    >
+
+        <div class="modal modal-document">
+
+            <div class="modal-header">
+
+                <div>
+
+                    <span class="modal-kicker">
+                        TERMO DE RESPONSABILIDADE
+                    </span>
+
+                    <h2 id="tituloTermo">
+                        -
+                    </h2>
+
+                </div>
+
+
+                <button
+                    class="modal-close"
+                    onclick="fecharModalTermo()"
+                >
+                    ×
+                </button>
+
+            </div>
+
+
+            <iframe
+                id="iframeTermo"
+                class="document-preview"
+                title="Visualização do termo"
+                style="
+                    width: 100%;
+                    min-height: 700px;
+                    border: none;
+                    background: #ffffff;
+                "
+            >
+            </iframe>
+
+
+            <div class="modal-footer">
+
+                <button
+                    class="btn-outline"
+                    onclick="fecharModalTermo()"
+                >
+                    Fechar
+                </button>
+
+
+                <button
+                    class="btn-primary"
+                    onclick="baixarTermoSelecionado()"
+                >
+                    Baixar termo
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div
+        id="toast"
+        class="toast"
+    >
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+    <script src="js/admin-auth.js"></script>
+
+    <script src="js/admin.js"></script>
+
+</body>
+
+</html>

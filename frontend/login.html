@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Termo TI - Login</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="login-body">
+
+    <main class="login-container">
+
+        <div class="login-card">
+
+            <div class="login-logo">
+                <img src="assets/icone-gtm.png" alt="GTM">
+            </div>
+
+            <h1>Termo TI</h1>
+
+            <p class="login-subtitle">
+                Acesso administrativo ao sistema de termos de responsabilidade
+            </p>
+
+            <form id="loginForm">
+
+                <div class="login-field">
+                    <label for="usuario">Usuário</label>
+
+                    <input
+                        type="text"
+                        id="usuario"
+                        autocomplete="username"
+                        required
+                    >
+                </div>
+
+                <div class="login-field">
+                    <label for="senha">Senha</label>
+
+                    <input
+                        type="password"
+                        id="senha"
+                        autocomplete="current-password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="login-button">
+                    Entrar
+                </button>
+
+                <p id="mensagem"></p>
+
+            </form>
+
+        </div>
+
+    </main>
+
+    <script src="js/login.js"></script>
+
+</body>
+</html>
