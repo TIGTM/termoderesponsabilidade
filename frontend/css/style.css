@@ -2101,6 +2101,12 @@ tbody tr:hover {
     margin-top: 24px;
 }
 
+#areaLoginColaborador h3{
+    display: flex;
+    padding-top: 5px;
+}
+
+
 .documento-acoes button {
     min-height: 42px;
     padding: 0 18px;

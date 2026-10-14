@@ -1,5 +1,9 @@
+
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using TermoTI.API.Data;
@@ -20,6 +24,15 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.Usuario) ||
+            string.IsNullOrEmpty(dto.Senha))
+        {
+            return Unauthorized(new
+            {
+                mensagem = "Usuário ou senha inválidos."
+            });
+        }
+
         var usuario = await _context.UsuariosAdmin
             .FirstOrDefaultAsync(x =>
                 x.Usuario == dto.Usuario &&
@@ -35,7 +48,10 @@ public class AuthController : ControllerBase
 
         var senhaHash = GerarHash(dto.Senha);
 
-        if (senhaHash != usuario.SenhaHash)
+        if (!string.Equals(
+            senhaHash,
+            usuario.SenhaHash,
+            StringComparison.OrdinalIgnoreCase))
         {
             return Unauthorized(new
             {
@@ -43,16 +59,22 @@ public class AuthController : ControllerBase
             });
         }
 
-        Response.Cookies.Append(
-            "termo_ti_admin",
-            usuario.Id.ToString(),
-            new CookieOptions
-            {
-                HttpOnly = true,
-                Secure = false,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTimeOffset.UtcNow.AddHours(8)
-            });
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+            new Claim(ClaimTypes.Name, usuario.Usuario),
+            new Claim(ClaimTypes.Role, "Admin")
+        };
+
+        var identidade = new ClaimsIdentity(
+            claims,
+            CookieAuthenticationDefaults.AuthenticationScheme);
+
+        var principal = new ClaimsPrincipal(identidade);
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal);
 
         return Ok(new
         {
@@ -61,9 +83,10 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("logout")]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()
     {
-        Response.Cookies.Delete("termo_ti_admin");
+        await HttpContext.SignOutAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme);
 
         return Ok(new
         {
@@ -74,12 +97,13 @@ public class AuthController : ControllerBase
     [HttpGet("me")]
     public async Task<IActionResult> Me()
     {
-        if (!Request.Cookies.TryGetValue(
-            "termo_ti_admin",
-            out var usuarioIdTexto))
+        if (User.Identity?.IsAuthenticated != true)
         {
             return Unauthorized();
         }
+
+        var usuarioIdTexto = User.FindFirstValue(
+            ClaimTypes.NameIdentifier);
 
         if (!int.TryParse(usuarioIdTexto, out var usuarioId))
         {
@@ -94,6 +118,9 @@ public class AuthController : ControllerBase
 
         if (usuario == null)
         {
+            await HttpContext.SignOutAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
             return Unauthorized();
         }
 
@@ -117,6 +144,15 @@ public class AuthController : ControllerBase
     [HttpGet("admin-test")]
     public IActionResult AdminTest()
     {
+        if (User.Identity?.IsAuthenticated != true ||
+            !User.IsInRole("Admin"))
+        {
+            return Unauthorized(new
+            {
+                mensagem = "Acesso não autorizado."
+            });
+        }
+
         return Ok(new
         {
             mensagem = "Você está autenticado como administrador."

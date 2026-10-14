@@ -88,7 +88,11 @@ async function carregarDados() {
 
         try {
             const resposta = await fetch(
-                `${API_URL}/termos/por-colaborador/${colaborador.id}`
+                `${API_URL}/termos/por-colaborador/${colaborador.id}`,
+                {
+                    method: "GET",
+                    credentials: "include"
+                }
             );
 
             if (resposta.status === 404) {
@@ -274,78 +278,71 @@ function renderizarEquipamentosDocumento() {
                 • ${escapeHTML(categoria)}
             </p>
 
-            ${
-                marcaModelo
-                    ? `
+            ${marcaModelo
+                ? `
                         <p>
                             • ${escapeHTML(marcaModelo)}
                         </p>
                     `
-                    : ""
+                : ""
             }
 
-            ${
-                equipamento.serial
-                    ? `
+            ${equipamento.serial
+                ? `
                         <p>
                             • Número de série:
                             ${escapeHTML(equipamento.serial)}
                         </p>
                     `
-                    : ""
+                : ""
             }
 
-            ${
-                equipamento.imei1 ||
+            ${equipamento.imei1 ||
                 equipamento.imei2
-                    ? `
+                ? `
                         <p>
-                            • ${
-                                equipamento.imei1
-                                    ? "IMEI 1: " +
-                                      escapeHTML(
-                                          equipamento.imei1
-                                      )
-                                    : ""
-                            }
+                            • ${equipamento.imei1
+                    ? "IMEI 1: " +
+                    escapeHTML(
+                        equipamento.imei1
+                    )
+                    : ""
+                }
 
-                            ${
-                                equipamento.imei2
-                                    ? " / IMEI 2: " +
-                                      escapeHTML(
-                                          equipamento.imei2
-                                      )
-                                    : ""
-                            }
+                            ${equipamento.imei2
+                    ? " / IMEI 2: " +
+                    escapeHTML(
+                        equipamento.imei2
+                    )
+                    : ""
+                }
                         </p>
                     `
-                    : ""
+                : ""
             }
 
-            ${
-                equipamento.numero
-                    ? `
+            ${equipamento.numero
+                ? `
                         <p>
                             • Número:
                             ${escapeHTML(
-                                equipamento.numero
-                            )}
+                    equipamento.numero
+                )}
                         </p>
                     `
-                    : ""
+                : ""
             }
 
-            ${
-                equipamento.capacidade
-                    ? `
+            ${equipamento.capacidade
+                ? `
                         <p>
                             • Capacidade:
                             ${escapeHTML(
-                                equipamento.capacidade
-                            )}
+                    equipamento.capacidade
+                )}
                         </p>
                     `
-                    : ""
+                : ""
             }
         `;
 
@@ -820,8 +817,8 @@ async function obterDadosDocumento() {
     const documentoVerso =
         arquivoVerso
             ? await arquivoParaBase64(
-                  arquivoVerso
-              )
+                arquivoVerso
+            )
             : null;
 
     return {
@@ -916,7 +913,7 @@ async function assinarTermo() {
     } catch (erro) {
         mostrarToast(
             erro.message ||
-                "Verifique os dados do documento.",
+            "Verifique os dados do documento.",
             "erro"
         );
 
@@ -967,40 +964,25 @@ async function assinarTermo() {
             await obterLocalizacao();
 
         if (!termoId) {
-            const respostaCriacao =
-                await fetch(
-                    `${API_URL}/termos`,
-                    {
-                        method: "POST",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body: JSON.stringify({
-                            colaboradorId:
-                                colaborador.id,
-
-                            status:
-                                "Pendente",
-
-                            documentoHTML:
-                                documentoHTML,
-
-                            equipamentos:
-                                equipamentos.map(
-                                    equipamento => ({
-                                        equipamentoId:
-                                            equipamento.id,
-
-                                        observacao:
-                                            null
-                                    })
-                                )
-                        })
-                    }
-                );
+            const respostaCriacao = await fetch(
+                `${API_URL}/termos`,
+                {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        colaboradorId: colaborador.id,
+                        status: "Pendente",
+                        documentoHTML: documentoHTML,
+                        equipamentos: equipamentos.map(equipamento => ({
+                            equipamentoId: equipamento.id,
+                            observacao: null
+                        }))
+                    })
+                }
+            );
 
             if (!respostaCriacao.ok) {
                 const erro =
@@ -1010,7 +992,7 @@ async function assinarTermo() {
 
                 throw new Error(
                     erro ||
-                        "Não foi possível criar o termo."
+                    "Não foi possível criar o termo."
                 );
             }
 
@@ -1020,32 +1002,22 @@ async function assinarTermo() {
             termoId =
                 termoAtual.id;
         } else {
-            const respostaAtualizacao =
-                await fetch(
-                    `${API_URL}/termos/${termoId}`,
-                    {
-                        method: "PUT",
-
-                        headers: {
-                            "Content-Type":
-                                "application/json"
-                        },
-
-                        body: JSON.stringify({
-                            id:
-                                termoId,
-
-                            colaboradorId:
-                                colaborador.id,
-
-                            status:
-                                "Pendente",
-
-                            documentoHTML:
-                                documentoHTML
-                        })
-                    }
-                );
+            const respostaAtualizacao = await fetch(
+                `${API_URL}/termos/${termoId}`,
+                {
+                    method: "PUT",
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        id: termoId,
+                        colaboradorId: colaborador.id,
+                        status: "Pendente",
+                        documentoHTML: documentoHTML
+                    })
+                }
+            );
 
             if (!respostaAtualizacao.ok) {
                 const erro =
@@ -1055,7 +1027,7 @@ async function assinarTermo() {
 
                 throw new Error(
                     erro ||
-                        "Não foi possível atualizar o termo."
+                    "Não foi possível atualizar o termo."
                 );
             }
 
@@ -1073,56 +1045,49 @@ async function assinarTermo() {
             "info"
         );
 
+
         const respostaAssinatura =
             await fetch(
                 `${API_URL}/termos/${termoId}/assinar`,
                 {
                     method: "POST",
+                    credentials: "include",
 
                     headers: {
-                        "Content-Type":
-                            "application/json"
+                        "Content-Type": "application/json"
                     },
 
                     body: JSON.stringify({
-                        assinatura:
-                            assinaturaDataURL,
+                        assinatura: assinaturaDataURL,
 
-                        latitude:
-                            localizacao.latitude,
+                        latitude: localizacao.latitude,
+                        longitude: localizacao.longitude,
+                        precisaoLocalizacao: localizacao.precisaoLocalizacao,
 
-                        longitude:
-                            localizacao.longitude,
+                        tipoDocumento: dadosDocumento.tipoDocumento,
+                        nomeDocumento: dadosDocumento.nomeDocumento,
 
-                        precisaoLocalizacao:
-                            localizacao.precisaoLocalizacao,
-
-                        tipoDocumento:
-                            dadosDocumento.tipoDocumento,
-
-                        nomeDocumento:
-                            dadosDocumento.nomeDocumento,
-
-                        documentoFrente:
-                            dadosDocumento.documentoFrente,
-
-                        documentoVerso:
-                            dadosDocumento.documentoVerso
+                        documentoFrente: dadosDocumento.documentoFrente,
+                        documentoVerso: dadosDocumento.documentoVerso
                     })
                 }
             );
 
+
         if (!respostaAssinatura.ok) {
-            const erro =
-                await obterMensagemErro(
-                    respostaAssinatura
-                );
+            const erro = await obterMensagemErro(respostaAssinatura);
+
+            console.error("Erro ao salvar assinatura:", {
+                status: respostaAssinatura.status,
+                mensagem: erro
+            });
 
             throw new Error(
-                erro ||
-                    "Não foi possível salvar a assinatura."
+                `Erro HTTP ${respostaAssinatura.status}: ${erro || "Não foi possível salvar a assinatura."
+                }`
             );
         }
+
 
         const resultadoAssinatura =
             await respostaAssinatura.json();
@@ -1200,7 +1165,7 @@ async function assinarTermo() {
 
         mostrarToast(
             erro.message ||
-                "Não foi possível salvar o termo.",
+            "Não foi possível salvar o termo.",
             "erro"
         );
     }
@@ -1384,9 +1349,9 @@ async function baixarPDF() {
     try {
         if (
             typeof html2canvas ===
-                "undefined" ||
+            "undefined" ||
             typeof window.jspdf ===
-                "undefined"
+            "undefined"
         ) {
             mostrarToast(
                 "As bibliotecas de PDF não foram carregadas.",
@@ -1411,8 +1376,8 @@ async function baixarPDF() {
         const nome =
             normalizarNomeArquivo(
                 colaboradorSessao?.nomeCompleto ||
-                    colaboradorSessao?.nome ||
-                    "colaborador"
+                colaboradorSessao?.nome ||
+                "colaborador"
             );
 
         iframe =

@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TermoTI.API.Data;
@@ -10,6 +12,8 @@ namespace TermoTI.API.Controllers;
 [Route("api/[controller]")]
 public class TermosController : ControllerBase
 {
+    private const string ColaboradorScheme = "ColaboradorCookie";
+
     private readonly TermoTIDbContext _context;
 
     public TermosController(TermoTIDbContext context)
@@ -17,21 +21,75 @@ public class TermosController : ControllerBase
         _context = context;
     }
 
-    [HttpGet("{id}")]
+    private bool TentarObterColaboradorAutenticado(out int colaboradorId)
+    {
+        var id = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        return int.TryParse(id, out colaboradorId)
+            && colaboradorId > 0;
+    }
+
+
+    [Authorize(AuthenticationSchemes = ColaboradorScheme)]
+    [HttpGet("{id:int}")]
     public async Task<ActionResult> GetTermo(int id)
     {
+        if (!TentarObterColaboradorAutenticado(out var colaboradorId))
+            return Unauthorized();
+
         var termo = await _context.Termos
+            .AsNoTracking()
+            .Where(t => t.Id == id)
+            .Select(t => new
+            {
+                id = t.Id,
+                colaboradorId = t.ColaboradorId,
+                status = t.Status,
+                dataAssinatura = t.DataAssinatura,
+                criadoEm = t.CriadoEm,
+                tipoDocumento = t.TipoDocumento,
+                nomeDocumento = t.NomeDocumento,
+                documentoHTML = t.DocumentoHTML
+            })
+            .FirstOrDefaultAsync();
+
+        if (termo == null)
+        {
+            return NotFound(new
+            {
+                mensagem = "Termo não encontrado."
+            });
+        }
+
+        if (termo.colaboradorId != colaboradorId)
+            return Forbid(ColaboradorScheme);
+
+        return Ok(termo);
+    }
+
+
+    [Authorize]
+    [HttpGet("/api/admin/termos/{id:int}")]
+    public async Task<ActionResult> GetTermoAdmin(int id)
+    {
+        var termo = await _context.Termos
+            .AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == id);
 
         if (termo == null)
         {
-            return NotFound();
+            return NotFound(new
+            {
+                mensagem = "Termo não encontrado."
+            });
         }
 
         var colaborador = await _context.Colaboradores
+            .AsNoTracking()
             .FirstOrDefaultAsync(c => c.Id == termo.ColaboradorId);
 
         var itens = await _context.TermoItens
+            .AsNoTracking()
             .Where(ti => ti.TermoId == id)
             .ToListAsync();
 
@@ -40,6 +98,7 @@ public class TermosController : ControllerBase
         foreach (var item in itens)
         {
             var equipamento = await _context.Equipamentos
+                .AsNoTracking()
                 .FirstOrDefaultAsync(e => e.Id == item.EquipamentoId);
 
             if (equipamento != null)
@@ -79,6 +138,14 @@ public class TermosController : ControllerBase
             tipoDocumento = termo.TipoDocumento,
             nomeDocumento = termo.NomeDocumento,
 
+            documentoFrente = ConverterBytesParaDataUrl(
+                termo.DocumentoFrente
+            ),
+
+            documentoVerso = ConverterBytesParaDataUrl(
+                termo.DocumentoVerso
+            ),
+
             colaborador = colaborador == null ? null : new
             {
                 id = colaborador.Id,
@@ -95,86 +162,114 @@ public class TermosController : ControllerBase
                 estado = colaborador.Estado
             },
 
-            equipamentos = equipamentos
+            equipamentos
         });
     }
 
+    [Authorize(AuthenticationSchemes = ColaboradorScheme)]
     [HttpPost]
-    public async Task<ActionResult> CriarTermo(CriarTermoDto dto)
+    public async Task<ActionResult> CriarTermo([FromBody] CriarTermoDto dto)
     {
-        var colaboradorExiste = await _context.Colaboradores
-            .AnyAsync(c => c.Id == dto.ColaboradorId);
+        if (!TentarObterColaboradorAutenticado(out var colaboradorId))
+            return Unauthorized();
 
-        if (!colaboradorExiste)
+        if (dto.ColaboradorId != colaboradorId)
+        {
+            return Forbid(ColaboradorScheme);
+        }
+
+        if (dto.Equipamentos == null || !dto.Equipamentos.Any())
         {
             return BadRequest(new
             {
-                mensagem = "O colaborador informado não existe."
+                mensagem = "Informe pelo menos um equipamento."
             });
         }
 
-        foreach (var item in dto.Equipamentos)
-        {
-            var equipamentoExiste = await _context.Equipamentos
-                .AnyAsync(e => e.Id == item.EquipamentoId);
+        var colaboradorExiste = await _context.Colaboradores
+            .AnyAsync(c => c.Id == colaboradorId);
 
-            if (!equipamentoExiste)
+        if (!colaboradorExiste)
+        {
+            return Unauthorized(new
             {
-                return BadRequest(new
-                {
-                    mensagem = $"O equipamento ID {item.EquipamentoId} não existe."
-                });
-            }
+                mensagem = "O colaborador da sessão não existe mais."
+            });
+        }
+
+        var idsEquipamentos = dto.Equipamentos
+            .Select(item => item.EquipamentoId)
+            .ToList();
+
+        if (idsEquipamentos.Any(id => id <= 0)
+            || idsEquipamentos.Distinct().Count() != idsEquipamentos.Count)
+        {
+            return BadRequest(new
+            {
+                mensagem = "A lista contém IDs de equipamentos inválidos ou duplicados."
+            });
+        }
+
+        var quantidadeEquipamentosExistentes = await _context.Equipamentos
+            .CountAsync(e => idsEquipamentos.Contains(e.Id));
+
+        if (quantidadeEquipamentosExistentes != idsEquipamentos.Count)
+        {
+            return BadRequest(new
+            {
+                mensagem = "Um ou mais equipamentos informados não existem."
+            });
         }
 
         var termo = new Termo
         {
-            ColaboradorId = dto.ColaboradorId,
-            Status = dto.Status ?? "Pendente",
+            ColaboradorId = colaboradorId,
+            Status = "Pendente",
             DocumentoHTML = dto.DocumentoHTML,
             CriadoEm = DateTime.Now
         };
 
-        _context.Termos.Add(termo);
+        await using var transacao =
+            await _context.Database.BeginTransactionAsync();
 
+        _context.Termos.Add(termo);
         await _context.SaveChangesAsync();
 
         foreach (var item in dto.Equipamentos)
         {
-            var termoItem = new TermoItem
+            _context.TermoItens.Add(new TermoItem
             {
                 TermoId = termo.Id,
                 EquipamentoId = item.EquipamentoId,
                 Observacao = item.Observacao
-            };
-
-            _context.TermoItens.Add(termoItem);
+            });
         }
 
         await _context.SaveChangesAsync();
+        await transacao.CommitAsync();
 
         return CreatedAtAction(
             nameof(GetTermo),
-            new
-            {
-                id = termo.Id
-            },
+            new { id = termo.Id },
             new
             {
                 id = termo.Id,
                 colaboradorId = termo.ColaboradorId,
                 status = termo.Status,
-                documentoHTML = termo.DocumentoHTML,
-                equipamentos = dto.Equipamentos
+                criadoEm = termo.CriadoEm
             }
         );
     }
 
-    [HttpPost("{id}/assinar")]
+    [Authorize(AuthenticationSchemes = ColaboradorScheme)]
+    [HttpPost("{id:int}/assinar")]
     public async Task<IActionResult> AssinarTermo(
         int id,
-        AssinarTermoDto dto)
+        [FromBody] AssinarTermoDto dto)
     {
+        if (!TentarObterColaboradorAutenticado(out var colaboradorId))
+            return Unauthorized();
+
         var termo = await _context.Termos
             .FirstOrDefaultAsync(t => t.Id == id);
 
@@ -183,6 +278,17 @@ public class TermosController : ControllerBase
             return NotFound(new
             {
                 mensagem = "Termo não encontrado."
+            });
+        }
+
+        if (termo.ColaboradorId != colaboradorId)
+            return Forbid(ColaboradorScheme);
+
+        if (termo.Status == "Assinado")
+        {
+            return BadRequest(new
+            {
+                mensagem = "Este termo já foi assinado."
             });
         }
 
@@ -224,33 +330,34 @@ public class TermosController : ControllerBase
 
             if (base64Assinatura.Contains(","))
             {
-                base64Assinatura = base64Assinatura.Substring(
-                    base64Assinatura.IndexOf(",") + 1
-                );
+                base64Assinatura = base64Assinatura[
+                    (base64Assinatura.IndexOf(",") + 1)..
+                ];
             }
 
-            termo.Assinatura = Convert.FromBase64String(
-                base64Assinatura
-            );
+            var assinatura = Convert.FromBase64String(base64Assinatura);
+
+            if (assinatura.Length == 0 || assinatura.Length > 1024 * 1024)
+            {
+                return BadRequest(new
+                {
+                    mensagem = "A assinatura está vazia ou ultrapassa 1 MB."
+                });
+            }
+
+            termo.Assinatura = assinatura;
 
             termo.DocumentoFrente = ConverterBase64ParaBytes(
                 dto.DocumentoFrente
             );
 
-            if (!string.IsNullOrWhiteSpace(dto.DocumentoVerso))
-            {
-                termo.DocumentoVerso = ConverterBase64ParaBytes(
-                    dto.DocumentoVerso
-                );
-            }
-            else
-            {
-                termo.DocumentoVerso = null;
-            }
+            termo.DocumentoVerso =
+                !string.IsNullOrWhiteSpace(dto.DocumentoVerso)
+                    ? ConverterBase64ParaBytes(dto.DocumentoVerso)
+                    : null;
 
             termo.TipoDocumento = dto.TipoDocumento;
             termo.NomeDocumento = dto.NomeDocumento;
-
             termo.Status = "Assinado";
             termo.DataAssinatura = DateTime.Now;
 
@@ -286,13 +393,7 @@ public class TermosController : ControllerBase
                 mensagem = "Termo assinado com sucesso.",
                 termoId = termo.Id,
                 status = termo.Status,
-                dataAssinatura = termo.DataAssinatura,
-                ipAssinatura = termo.IPAssinatura,
-                latitude = termo.Latitude,
-                longitude = termo.Longitude,
-                precisaoLocalizacao = termo.PrecisaoLocalizacao,
-                tipoDocumento = termo.TipoDocumento,
-                nomeDocumento = termo.NomeDocumento
+                dataAssinatura = termo.DataAssinatura
             });
         }
         catch (FormatException)
@@ -311,11 +412,15 @@ public class TermosController : ControllerBase
         }
     }
 
-    [HttpPut("{id}")]
+    [Authorize(AuthenticationSchemes = ColaboradorScheme)]
+    [HttpPut("{id:int}")]
     public async Task<IActionResult> AtualizarTermo(
         int id,
-        Termo termoRecebido)
+        [FromBody] Termo termoRecebido)
     {
+        if (!TentarObterColaboradorAutenticado(out var colaboradorId))
+            return Unauthorized();
+
         if (id != termoRecebido.Id)
         {
             return BadRequest(new
@@ -335,8 +440,25 @@ public class TermosController : ControllerBase
             });
         }
 
-        termo.ColaboradorId = termoRecebido.ColaboradorId;
-        termo.Status = termoRecebido.Status;
+        if (termo.ColaboradorId != colaboradorId)
+            return Forbid(ColaboradorScheme);
+
+        if (termo.Status == "Assinado")
+        {
+            return BadRequest(new
+            {
+                mensagem = "Não é permitido alterar um termo já assinado."
+            });
+        }
+
+        if (termoRecebido.ColaboradorId != colaboradorId)
+        {
+            return BadRequest(new
+            {
+                mensagem = "Não é permitido alterar o colaborador do termo."
+            });
+        }
+
         termo.DocumentoHTML = termoRecebido.DocumentoHTML;
 
         await _context.SaveChangesAsync();
@@ -344,6 +466,7 @@ public class TermosController : ControllerBase
         return NoContent();
     }
 
+    [Authorize]
     [HttpGet("/api/admin/termos")]
     public async Task<ActionResult<IEnumerable<object>>> GetTermosAdmin()
     {
@@ -381,36 +504,37 @@ public class TermosController : ControllerBase
         return Ok(resultado);
     }
 
-    [HttpGet("por-colaborador/{colaboradorId}")]
+    [Authorize(AuthenticationSchemes = ColaboradorScheme)]
+    [HttpGet("por-colaborador/{colaboradorId:int}")]
     public async Task<ActionResult> GetTermoPorColaborador(
         int colaboradorId)
     {
+        if (!TentarObterColaboradorAutenticado(out var idAutenticado))
+            return Unauthorized();
+
+        if (colaboradorId != idAutenticado)
+            return Forbid(ColaboradorScheme);
+
         var termo = await _context.Termos
-            .Where(t => t.ColaboradorId == colaboradorId)
+            .AsNoTracking()
+            .Where(t => t.ColaboradorId == idAutenticado)
             .OrderByDescending(t => t.CriadoEm)
+            .Select(t => new
+            {
+                id = t.Id,
+                colaboradorId = t.ColaboradorId,
+                status = t.Status,
+                dataAssinatura = t.DataAssinatura,
+                criadoEm = t.CriadoEm,
+                tipoDocumento = t.TipoDocumento,
+                nomeDocumento = t.NomeDocumento
+            })
             .FirstOrDefaultAsync();
 
         if (termo == null)
-        {
-            return NotFound();
-        }
+            return NotFound(new { mensagem = "Nenhum termo encontrado." });
 
-        return Ok(new
-        {
-            id = termo.Id,
-            colaboradorId = termo.ColaboradorId,
-            status = termo.Status,
-            dataAssinatura = termo.DataAssinatura,
-            assinatura = termo.Assinatura,
-            documentoHTML = termo.DocumentoHTML,
-            criadoEm = termo.CriadoEm,
-            ipAssinatura = termo.IPAssinatura,
-            latitude = termo.Latitude,
-            longitude = termo.Longitude,
-            precisaoLocalizacao = termo.PrecisaoLocalizacao,
-            tipoDocumento = termo.TipoDocumento,
-            nomeDocumento = termo.NomeDocumento
-        });
+        return Ok(termo);
     }
 
     private static byte[] ConverterBase64ParaBytes(string base64)
@@ -426,18 +550,16 @@ public class TermosController : ControllerBase
 
         if (base64Limpo.Contains(","))
         {
-            base64Limpo = base64Limpo.Substring(
-                base64Limpo.IndexOf(",") + 1
-            );
+            base64Limpo = base64Limpo[
+                (base64Limpo.IndexOf(",") + 1)..
+            ];
         }
 
         byte[] arquivo;
 
         try
         {
-            arquivo = Convert.FromBase64String(
-                base64Limpo
-            );
+            arquivo = Convert.FromBase64String(base64Limpo);
         }
         catch (FormatException)
         {
@@ -447,6 +569,13 @@ public class TermosController : ControllerBase
         }
 
         const int limite = 5 * 1024 * 1024;
+
+        if (arquivo.Length == 0)
+        {
+            throw new InvalidOperationException(
+                "A imagem enviada está vazia."
+            );
+        }
 
         if (arquivo.Length > limite)
         {
@@ -461,9 +590,7 @@ public class TermosController : ControllerBase
     private static string? ConverterBytesParaDataUrl(byte[]? arquivo)
     {
         if (arquivo == null || arquivo.Length == 0)
-        {
             return null;
-        }
 
         var tipoMime = DetectarTipoImagem(arquivo);
 

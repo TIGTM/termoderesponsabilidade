@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 async function carregarDados() {
     try {
+        console.log("1. Carregando colaboradores...");
+
         const respostaColaboradores = await fetch(
             `${API_URL}/admin/colaboradores`,
             {
@@ -27,13 +29,24 @@ async function carregarDados() {
             }
         );
 
+        const textoColaboradores =
+            await respostaColaboradores.text();
+
+        console.log(
+            "Colaboradores:",
+            respostaColaboradores.status,
+            textoColaboradores
+        );
+
         if (!respostaColaboradores.ok) {
-            throw new Error(
-                `Erro colaboradores: ${respostaColaboradores.status}`
-            );
+            throw new Error(textoColaboradores);
         }
 
-        colaboradores = await respostaColaboradores.json();
+        colaboradores = textoColaboradores
+            ? JSON.parse(textoColaboradores)
+            : [];
+
+        console.log("2. Carregando equipamentos...");
 
         const respostaEquipamentos = await fetch(
             `${API_URL}/admin/equipamentos`,
@@ -44,16 +57,24 @@ async function carregarDados() {
             }
         );
 
-        if (!respostaEquipamentos.ok) {
-            const textoErro = await respostaEquipamentos.text();
+        const textoEquipamentos =
+            await respostaEquipamentos.text();
 
-            throw new Error(
-                textoErro ||
-                `Erro equipamentos: ${respostaEquipamentos.status}`
-            );
+        console.log(
+            "Equipamentos:",
+            respostaEquipamentos.status,
+            textoEquipamentos
+        );
+
+        if (!respostaEquipamentos.ok) {
+            throw new Error(textoEquipamentos);
         }
 
-        equipamentos = await respostaEquipamentos.json();
+        equipamentos = textoEquipamentos
+            ? JSON.parse(textoEquipamentos)
+            : [];
+
+        console.log("3. Carregando termos...");
 
         const respostaTermos = await fetch(
             `${API_URL}/admin/termos`,
@@ -64,13 +85,24 @@ async function carregarDados() {
             }
         );
 
+        const textoTermos =
+            await respostaTermos.text();
+
+        console.log(
+            "Termos:",
+            respostaTermos.status,
+            textoTermos
+        );
+
         if (!respostaTermos.ok) {
-            throw new Error(
-                `Erro termos: ${respostaTermos.status}`
-            );
+            throw new Error(textoTermos);
         }
 
-        termos = await respostaTermos.json();
+        termos = textoTermos
+            ? JSON.parse(textoTermos)
+            : [];
+
+        console.log("4. Renderizando painel...");
 
         renderizar();
         atualizarEstatisticas();
@@ -78,6 +110,9 @@ async function carregarDados() {
         document.body.classList.remove(
             "admin-page-loading"
         );
+
+        console.log("Carregamento concluído.");
+
     } catch (erro) {
         console.error(
             "ERRO AO CARREGAR DADOS:",
@@ -527,8 +562,8 @@ function renderizar() {
                 <td>
                     <span class="collaborator-name">
                         ${escapeHTML(
-                            colaborador.nome
-                        )}
+                colaborador.nome
+            )}
                     </span>
                 </td>
 
@@ -540,37 +575,35 @@ function renderizar() {
                 </td>
 
                 <td>
-                    ${
-                        assinou
-                            ? `
+                    ${assinou
+                    ? `
                                 <span class="status status-signed">
                                     ASSINOU
                                 </span>
                             `
-                            : `
+                    : `
                                 <span class="status status-pending">
                                     NÃO ASSINOU
                                 </span>
                             `
-                    }
+                }
                 </td>
 
                 <td>
-                    ${
-                        assinou
-                            ? `
+                    ${assinou
+                    ? `
                                 <span class="date-cell">
                                     ${formatarDataHora(
-                                        colaborador.termo.dataAssinatura
-                                    )}
+                        colaborador.termo.dataAssinatura
+                    )}
                                 </span>
                             `
-                            : `
+                    : `
                                 <span class="date-cell">
                                     —
                                 </span>
                             `
-                    }
+                }
                 </td>
 
                 <td>
@@ -580,21 +613,20 @@ function renderizar() {
                             type="button"
                             class="action-btn"
                             onclick="abrirEquipamentos('${escapeAttribute(
-                                colaborador.id
-                            )}')"
+                    colaborador.id
+                )}')"
                         >
                             Ver detalhes
                         </button>
 
-                        ${
-                            assinou
-                                ? `
+                        ${assinou
+                    ? `
                                     <button
                                         type="button"
                                         class="action-btn"
                                         onclick="abrirTermo('${escapeAttribute(
-                                            colaborador.id
-                                        )}')"
+                        colaborador.id
+                    )}')"
                                     >
                                         Ver termo
                                     </button>
@@ -603,14 +635,14 @@ function renderizar() {
                                         type="button"
                                         class="action-btn action-btn-danger"
                                         onclick="excluirTermoAdmin('${escapeAttribute(
-                                            colaborador.id
-                                        )}')"
+                        colaborador.id
+                    )}')"
                                     >
                                         Excluir termo
                                     </button>
                                 `
-                                : ""
-                        }
+                    : ""
+                }
 
                     </div>
                 </td>
@@ -798,7 +830,7 @@ function abrirEquipamentos(id) {
     if (modalIPAssinatura) {
         modalIPAssinatura.textContent =
             assinou &&
-            termo.ipAssinatura
+                termo.ipAssinatura
                 ? termo.ipAssinatura
                 : "Não informado";
     }
@@ -806,8 +838,8 @@ function abrirEquipamentos(id) {
     if (modalLatitude) {
         modalLatitude.textContent =
             assinou &&
-            termo.latitude !== null &&
-            termo.latitude !== undefined
+                termo.latitude !== null &&
+                termo.latitude !== undefined
                 ? Number(
                     termo.latitude
                 ).toFixed(7)
@@ -817,8 +849,8 @@ function abrirEquipamentos(id) {
     if (modalLongitude) {
         modalLongitude.textContent =
             assinou &&
-            termo.longitude !== null &&
-            termo.longitude !== undefined
+                termo.longitude !== null &&
+                termo.longitude !== undefined
                 ? Number(
                     termo.longitude
                 ).toFixed(7)
@@ -828,8 +860,8 @@ function abrirEquipamentos(id) {
     if (modalPrecisaoLocalizacao) {
         modalPrecisaoLocalizacao.textContent =
             assinou &&
-            termo.precisaoLocalizacao !== null &&
-            termo.precisaoLocalizacao !== undefined
+                termo.precisaoLocalizacao !== null &&
+                termo.precisaoLocalizacao !== undefined
                 ? `${Number(
                     termo.precisaoLocalizacao
                 ).toFixed(2)} metros`
@@ -885,98 +917,97 @@ function abrirEquipamentos(id) {
                         <div>
                             <div class="equipment-title">
                                 ${escapeHTML(
-                                    equipamento.marca
-                                )}
+                    equipamento.marca
+                )}
                                 ${escapeHTML(
-                                    equipamento.modelo
-                                )}
+                    equipamento.modelo
+                )}
                             </div>
 
                             <div class="equipment-type">
                                 ${escapeHTML(
-                                    equipamento.tipo ||
-                                    equipamento.categoria ||
-                                    "Equipamento"
-                                )}
+                    equipamento.tipo ||
+                    equipamento.categoria ||
+                    "Equipamento"
+                )}
                             </div>
                         </div>
 
-                        <span class="status ${
-                            String(
-                                equipamento.status || ""
-                            ).toLowerCase() ===
-                            "em uso"
-                                ? "status-signed"
-                                : "status-pending"
-                        }">
+                        <span class="status ${String(
+                    equipamento.status || ""
+                ).toLowerCase() ===
+                        "em uso"
+                        ? "status-signed"
+                        : "status-pending"
+                    }">
                             ${escapeHTML(
-                                equipamento.status ||
-                                "—"
-                            )}
+                        equipamento.status ||
+                        "—"
+                    )}
                         </span>
                     </div>
 
                     <div class="equipment-grid">
 
                         ${campoEquipamento(
-                            "Patrimônio",
-                            equipamento.patrimonio
-                        )}
+                        "Patrimônio",
+                        equipamento.patrimonio
+                    )}
 
                         ${campoEquipamento(
-                            "Número de série",
-                            equipamento.serial
-                        )}
+                        "Número de série",
+                        equipamento.serial
+                    )}
 
                         ${campoEquipamento(
-                            "Marca",
-                            equipamento.marca
-                        )}
+                        "Marca",
+                        equipamento.marca
+                    )}
 
                         ${campoEquipamento(
-                            "Modelo",
-                            equipamento.modelo
-                        )}
+                        "Modelo",
+                        equipamento.modelo
+                    )}
 
                         ${campoEquipamento(
-                            "Local",
-                            equipamento.local
-                        )}
+                        "Local",
+                        equipamento.local
+                    )}
 
                         ${campoEquipamento(
-                            "Setor",
-                            equipamento.setor
-                        )}
+                        "Setor",
+                        equipamento.setor
+                    )}
 
                         ${campoEquipamento(
-                            "Processador",
-                            equipamento.processador
-                        )}
+                        "Processador",
+                        equipamento.processador
+                    )}
 
                         ${campoEquipamento(
-                            "Memória RAM",
-                            equipamento.memoriaRam
-                        )}
+                        "Memória RAM",
+                        equipamento.memoriaRam
+                    )}
 
                         ${campoEquipamento(
-                            "Armazenamento",
-                            equipamento.armazenamento
-                        )}
+                        "Armazenamento",
+                        equipamento.armazenamento
+                    )}
 
                         ${campoEquipamento(
-                            "Sistema operacional",
-                            equipamento.sistemaOperacional
-                        )}
+                        "Sistema operacional",
+                        equipamento.sistemaOperacional
+                    )}
 
                         ${campoEquipamento(
-                            "IMEI 1",
-                            equipamento.imei1
-                        )}
+                        "IMEI 1",
+                        equipamento.imei1
+                    )}
 
                         ${campoEquipamento(
-                            "IMEI 2",
-                            equipamento.imei2
-                        )}
+                        "IMEI 2",
+                        equipamento.imei2
+                    )}
 
                     </div>
                 `;
@@ -1045,7 +1076,7 @@ function preencherDadosDocumento(
     if (tipo) {
         tipo.textContent =
             assinou &&
-            termo?.tipoDocumento
+                termo?.tipoDocumento
                 ? termo.tipoDocumento
                 : "Não informado";
     }
@@ -1053,7 +1084,7 @@ function preencherDadosDocumento(
     if (numero) {
         numero.textContent =
             assinou &&
-            termo?.nomeDocumento
+                termo?.nomeDocumento
                 ? termo.nomeDocumento
                 : "Não informado";
     }
@@ -1237,16 +1268,16 @@ function criarDocumentoTermoHTML(
 
     <title>
         ${escapeHTML(
-            titulo ||
-            "Termo de Responsabilidade"
-        )}
+        titulo ||
+        "Termo de Responsabilidade"
+    )}
     </title>
 
     <link
         rel="stylesheet"
         href="${escapeAttribute(
-            caminhoCSS
-        )}"
+        caminhoCSS
+    )}"
     >
 
     <style>
@@ -1290,33 +1321,14 @@ async function abrirTermo(idColaborador) {
             return;
         }
 
-        /*
-         * IMPORTANTE:
-         *
-         * Guardamos o colaborador selecionado.
-         * Isso também permite que o botão
-         * "Baixar termo" funcione quando o usuário
-         * abriu o termo diretamente pela tabela.
-         */
         colaboradorSelecionado =
             colaborador;
 
-        /*
-         * Primeiro procura nos termos que já
-         * foram carregados pelo admin.
-         *
-         * A função já prioriza o termo assinado
-         * mais recente.
-         */
         let termoResumo =
             obterTermoDoColaborador(
                 idColaborador
             );
 
-        /*
-         * Se por algum motivo não encontrar,
-         * consulta novamente a API.
-         */
         if (!termoResumo) {
             const resposta =
                 await fetch(
@@ -1378,21 +1390,17 @@ async function abrirTermo(idColaborador) {
                 termosAssinados[0];
         }
 
-        /*
-         * Agora buscamos o termo completo.
-         *
-         * É aqui que vem o documentoHTML salvo
-         * no momento da assinatura.
-         */
+
         const respostaTermo =
             await fetch(
-                `${API_URL}/termos/${termoResumo.id}`,
+                `${API_URL}/admin/termos/${termoResumo.id}`,
                 {
                     method: "GET",
                     credentials: "include",
                     cache: "no-store"
                 }
             );
+
 
         if (!respostaTermo.ok) {
             throw new Error(
@@ -1403,10 +1411,6 @@ async function abrirTermo(idColaborador) {
         const termoCompleto =
             await respostaTermo.json();
 
-        /*
-         * Verifica se realmente recebemos
-         * o documento original.
-         */
         if (
             !termoCompleto ||
             !termoCompleto.documentoHTML
@@ -1423,10 +1427,6 @@ async function abrirTermo(idColaborador) {
             return;
         }
 
-        /*
-         * Guarda o termo completo para o botão
-         * "Baixar termo".
-         */
         window.termoSelecionado =
             termoCompleto;
 
@@ -1459,38 +1459,18 @@ async function abrirTermo(idColaborador) {
 
         if (titulo) {
             titulo.textContent =
-                `Termo de Responsabilidade - ${
-                    colaborador.nome ||
-                    colaborador.nomeCompleto ||
-                    ""
+                `Termo de Responsabilidade - ${colaborador.nome ||
+                colaborador.nomeCompleto ||
+                ""
                 }`;
         }
 
-        /*
-         * Aqui está a correção principal.
-         *
-         * O HTML original salvo no banco é colocado
-         * no srcdoc do iframe.
-         *
-         * O navegador então interpreta:
-         *
-         * <div>
-         * <p>
-         * <strong>
-         * etc.
-         *
-         * em vez de mostrar \u003C, \u003E etc.
-         */
         iframe.srcdoc =
             criarDocumentoTermoHTML(
                 termoCompleto,
                 colaborador.nome
             );
 
-        /*
-         * Abre o modal somente depois de
-         * preparar o documento.
-         */
         modal.classList.add(
             "active"
         );
@@ -1534,9 +1514,9 @@ function campoInformacaoTermo(
                 word-break:break-word;
             ">
                 ${escapeHTML(
-                    valor ||
-                    "Não informado"
-                )}
+        valor ||
+        "Não informado"
+    )}
             </div>
         </div>
     `;
@@ -1577,16 +1557,9 @@ function fecharModalTermoFora(event) {
 }
 
 async function baixarTermoSelecionado() {
-    /*
-     * Primeiro tenta usar o termo que já foi
-     * carregado no modal.
-     */
+
     let termo = window.termoSelecionado;
 
-    /*
-     * Se ainda não existir, procura pelo
-     * colaborador selecionado.
-     */
     if (
         !termo &&
         colaboradorSelecionado
@@ -1598,15 +1571,14 @@ async function baixarTermoSelecionado() {
 
         if (termoResumo) {
             try {
-                const resposta =
-                    await fetch(
-                        `${API_URL}/termos/${termoResumo.id}`,
-                        {
-                            method: "GET",
-                            credentials: "include",
-                            cache: "no-store"
-                        }
-                    );
+                const resposta = await fetch(
+                    `${API_URL}/admin/termos/${termoResumo.id}`,
+                    {
+                        method: "GET",
+                        credentials: "include",
+                        cache: "no-store"
+                    }
+                );
 
                 if (resposta.ok) {
                     termo =
@@ -1630,10 +1602,6 @@ async function baixarTermoSelecionado() {
         return;
     }
 
-    /*
-     * Se não temos colaborador selecionado,
-     * tenta descobrir pelo ID do termo.
-     */
     if (!colaboradorSelecionado) {
         colaboradorSelecionado =
             colaboradores.find(
@@ -1720,21 +1688,30 @@ async function baixarTermoSelecionado() {
 
             iframeDocument.close();
 
+
             await esperarCarregamentoIframe(
                 iframe
             );
+
+            if (iframeDocument.fonts) {
+                await iframeDocument.fonts.ready;
+            }
 
             await esperarImagens(
                 iframeDocument
             );
 
+            await new Promise(resolve => {
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(resolve);
+                });
+            });
+
             await new Promise(
                 resolve =>
-                    setTimeout(
-                        resolve,
-                        500
-                    )
+                    setTimeout(resolve, 300)
             );
+
 
             const paginas =
                 iframeDocument.querySelectorAll(
@@ -1843,8 +1820,7 @@ async function baixarTermoSelecionado() {
 
                 const imagem =
                     canvasPDF.toDataURL(
-                        "image/jpeg",
-                        0.98
+                        "image/png"
                     );
 
                 if (i > 0) {

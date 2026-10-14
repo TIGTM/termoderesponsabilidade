@@ -1,4 +1,8 @@
+
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TermoTI.API.Data;
 
 namespace TermoTI.API.Middleware;
@@ -22,44 +26,46 @@ public class AdminAuthMiddleware
             return;
         }
 
-        if (!context.Request.Cookies.TryGetValue(
-            "termo_ti_admin",
-            out var usuarioIdTexto))
+        if (context.User.Identity?.IsAuthenticated != true ||
+            !context.User.IsInRole("Admin"))
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                mensagem = "Acesso não autorizado."
-            });
+            await NaoAutorizado(context);
             return;
         }
+
+        var usuarioIdTexto = context.User.FindFirstValue(
+            ClaimTypes.NameIdentifier);
 
         if (!int.TryParse(usuarioIdTexto, out var usuarioId))
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                mensagem = "Acesso não autorizado."
-            });
+            await NaoAutorizado(context);
             return;
         }
 
-        var usuario = await db.UsuariosAdmin
+        var usuarioAtivo = await db.UsuariosAdmin
             .AsNoTracking()
-            .FirstOrDefaultAsync(x =>
-                x.Id == usuarioId &&
-                x.Ativo);
+            .AnyAsync(x => x.Id == usuarioId && x.Ativo);
 
-        if (usuario == null)
+        if (!usuarioAtivo)
         {
-            context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-            await context.Response.WriteAsJsonAsync(new
-            {
-                mensagem = "Acesso não autorizado."
-            });
+            await context.SignOutAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme);
+
+            await NaoAutorizado(context);
             return;
         }
 
         await _next(context);
+    }
+
+    private static async Task NaoAutorizado(HttpContext context)
+    {
+        context.Response.StatusCode =
+            StatusCodes.Status401Unauthorized;
+
+        await context.Response.WriteAsJsonAsync(new
+        {
+            mensagem = "Acesso não autorizado."
+        });
     }
 }
