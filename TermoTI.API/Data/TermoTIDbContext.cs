@@ -24,40 +24,34 @@ public class TermoTIDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Colaborador → Termos
         modelBuilder.Entity<Termo>()
             .HasOne<Colaborador>()
             .WithMany()
             .HasForeignKey(t => t.ColaboradorId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Termo → Itens
         modelBuilder.Entity<TermoItem>()
             .HasOne<Termo>()
             .WithMany()
             .HasForeignKey(ti => ti.TermoId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Equipamento → Itens
         modelBuilder.Entity<TermoItem>()
             .HasOne<Equipamento>()
             .WithMany()
             .HasForeignKey(ti => ti.EquipamentoId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Equipamento → Responsável
         modelBuilder.Entity<Equipamento>()
             .HasOne<Colaborador>()
             .WithMany()
             .HasForeignKey(e => e.ResponsavelId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Valor monetário
         modelBuilder.Entity<Equipamento>()
             .Property(e => e.Valor)
             .HasPrecision(18, 2);
 
-        // Localização da assinatura
         modelBuilder.Entity<Termo>()
             .Property(t => t.Latitude)
             .HasPrecision(10, 7);
