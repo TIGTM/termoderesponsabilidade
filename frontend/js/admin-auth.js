@@ -35,5 +35,25 @@ async function verificarAutenticacaoAdmin() {
     }
 }
 
+async function logout() {
+    try {
+        const resposta = await fetch("http://localhost:5268/api/auth/logout", {
+            method: "POST",
+            credentials: "include"
+        });
+
+        if (!resposta.ok) {
+            throw new Error("Não foi possível encerrar a sessão.");
+        }
+
+        window.location.replace("index.html");
+    } catch (erro) {
+        console.error("Erro ao fazer logout:", erro);
+        alert("Não foi possível sair. Tente novamente.");
+    }
+}
+
+window.logout = logout;
+
 window.adminAutenticado =
     verificarAutenticacaoAdmin();

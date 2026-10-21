@@ -95,6 +95,17 @@ button {
     transition: 0.2s;
 }
 
+.btn-primary,
+.btn-outline-logout {
+    min-height: 42px;
+    padding: 0 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    border: 1px solid transparent;
+    transition: 0.2s;
+}
+
 .btn-primary {
     background: var(--primary);
     color: #ffffff;
@@ -115,9 +126,16 @@ button {
     border-color: var(--border);
 }
 
+.btn-outline-logout {
+    background: #f1b2b2;
+    color: var(--text);
+    border-color: var(--border);
+}
+
 .btn-outline:hover {
     background: #f8fafc;
 }
+
 
 .login-container {
     min-height: calc(100vh - 72px);

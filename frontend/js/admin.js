@@ -32,11 +32,6 @@ async function carregarDados() {
         const textoColaboradores =
             await respostaColaboradores.text();
 
-        console.log(
-            "Colaboradores:",
-            respostaColaboradores.status,
-            textoColaboradores
-        );
 
         if (!respostaColaboradores.ok) {
             throw new Error(textoColaboradores);
@@ -60,11 +55,6 @@ async function carregarDados() {
         const textoEquipamentos =
             await respostaEquipamentos.text();
 
-        console.log(
-            "Equipamentos:",
-            respostaEquipamentos.status,
-            textoEquipamentos
-        );
 
         if (!respostaEquipamentos.ok) {
             throw new Error(textoEquipamentos);
@@ -88,11 +78,6 @@ async function carregarDados() {
         const textoTermos =
             await respostaTermos.text();
 
-        console.log(
-            "Termos:",
-            respostaTermos.status,
-            textoTermos
-        );
 
         if (!respostaTermos.ok) {
             throw new Error(textoTermos);
