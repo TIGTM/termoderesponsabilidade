@@ -1,0 +1,62 @@
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: termoti-sqlserver
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Express
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Defina MSSQL_SA_PASSWORD no arquivo .env}
+    volumes:
+      - termoti_sql_data:/var/opt/mssql
+    networks:
+      - termoti-network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q \"SELECT 1\" || exit 1"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  api:
+    build:
+      context: ./TermoTI.API
+      dockerfile: Dockerfile
+    container_name: termoti-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TermoTI;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Defina MSSQL_SA_PASSWORD no arquivo .env};Encrypt=True;TrustServerCertificate=True"
+      ADMIN_BOOTSTRAP_USER: ${ADMIN_BOOTSTRAP_USER:-}
+      ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_BOOTSTRAP_PASSWORD:-}
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - termoti-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: termoti-frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    networks:
+      - termoti-network
+
+networks:
+  termoti-network:
+    driver: bridge
+
+volumes:
+  termoti_sql_data:

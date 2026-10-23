@@ -1,5 +1,5 @@
 
-const API_URL = "http://localhost:5268/api";
+const API_URL = "/api";
 
 let colaboradores = [];
 let colaboradorSelecionado = null;
@@ -32,9 +32,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 });
 
-// ============================================================
-// COLABORADORES
-// ============================================================
 
 async function carregarColaboradores() {
     try {
@@ -147,9 +144,6 @@ function preencherFormulario(colaborador) {
     });
 }
 
-// ============================================================
-// LOGIN DO COLABORADOR
-// ============================================================
 
 async function autenticarColaborador() {
     if (!colaboradorSelecionado) {
@@ -261,9 +255,7 @@ async function autenticarColaborador() {
     }
 }
 
-// ============================================================
-// EQUIPAMENTOS
-// ============================================================
+
 
 async function obterEquipamentosDoColaborador(colaborador) {
     const resposta = await fetch(`${API_URL}/equipamentos`, {
@@ -284,9 +276,7 @@ async function obterEquipamentosDoColaborador(colaborador) {
         throw new Error("A API retornou uma lista de equipamentos inválida.");
     }
 
-    // A API já deve filtrar os equipamentos que este colaborador pode consultar.
-    // Não filtre novamente por responsavelId ou nome: isso escondia os itens
-    // disponíveis que ainda não possuem responsável.
+
     return equipamentos;
 }
 
@@ -395,9 +385,7 @@ function obterIconeEquipamento(equipamento) {
     return "TI";
 }
 
-// ============================================================
-// SALVAR DADOS E AVANÇAR PARA O TERMO
-// ============================================================
+
 
 async function continuarParaTermo() {
     if (!colaboradorSelecionado) {
@@ -546,9 +534,7 @@ function validarFormulario() {
     return true;
 }
 
-// ============================================================
-// CONSULTA DO TERMO
-// ============================================================
+
 
 async function obterTermoPorColaborador(colaboradorId) {
     const resposta = await fetch(
@@ -673,7 +659,7 @@ async function visualizarTermo() {
         );
 
         const resposta = await fetch(
-            `http://localhost:5268/api/termos/${termoResumo.id}`,
+            `/api/termos/${termoResumo.id}`,
             {
                 method: "GET",
                 credentials: "include",
@@ -750,7 +736,7 @@ async function baixarTermoAssinado() {
     try {
         mostrarToast("Buscando termo assinado...", "info");
 
-        // Primeiro, busca o resumo do termo do colaborador.
+
         const resumo = await obterTermoPorColaborador(
             colaboradorSelecionado.id
         );
@@ -763,7 +749,7 @@ async function baixarTermoAssinado() {
             return;
         }
 
-        // Depois, busca o documento completo pelo ID.
+
         const resposta = await fetch(
             `${API_URL}/termos/${resumo.id}`,
             {
@@ -901,7 +887,7 @@ async function baixarTermoAssinado() {
 
         iframeDocument.close();
 
-        // Aguarda o carregamento do documento.
+
         await new Promise((resolve, reject) => {
             const inicio = Date.now();
 
@@ -924,12 +910,12 @@ async function baixarTermoAssinado() {
             verificar();
         });
 
-        // Aguarda as fontes utilizadas no documento.
+   
         if (iframeDocument.fonts && iframeDocument.fonts.ready) {
             await iframeDocument.fonts.ready;
         }
 
-        // Aguarda as imagens.
+
         await Promise.all(
             Array.from(iframeDocument.images).map(img => {
                 if (img.complete) {
@@ -945,7 +931,7 @@ async function baixarTermoAssinado() {
             })
         );
 
-        // Aguarda o navegador concluir a renderização.
+ 
         await new Promise(resolve => {
             iframe.contentWindow.requestAnimationFrame(() => {
                 iframe.contentWindow.requestAnimationFrame(resolve);
@@ -1150,9 +1136,7 @@ function configurarMascaras() {
     }
 }
 
-// ============================================================
-// VALIDAÇÕES E UTILITÁRIOS
-// ============================================================
+
 
 function validarCPF(cpf) {
     const valor = String(cpf || "").replace(/\D/g, "");

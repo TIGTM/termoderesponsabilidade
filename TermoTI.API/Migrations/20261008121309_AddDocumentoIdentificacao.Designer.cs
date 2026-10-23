@@ -15,7 +15,6 @@ namespace TermoTI.API.Migrations
     [Migration("20261008121309_AddDocumentoIdentificacao")]
     partial class AddDocumentoIdentificacao
     {
-        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618

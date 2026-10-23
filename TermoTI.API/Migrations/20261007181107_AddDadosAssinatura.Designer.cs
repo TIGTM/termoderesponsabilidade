@@ -15,7 +15,6 @@ namespace TermoTI.API.Migrations
     [Migration("20261007181107_AddDadosAssinatura")]
     partial class AddDadosAssinatura
     {
-        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618

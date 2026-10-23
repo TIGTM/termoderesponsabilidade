@@ -4,10 +4,8 @@
 
 namespace TermoTI.API.Migrations
 {
-    /// <inheritdoc />
     public partial class AddRelacionamentos : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -74,7 +72,6 @@ namespace TermoTI.API.Migrations
                 onDelete: ReferentialAction.Restrict);
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(

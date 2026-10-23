@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5268/api";
+const API_URL = "/api";
 
 const form = document.getElementById("loginForm");
 const mensagem = document.getElementById("mensagem");

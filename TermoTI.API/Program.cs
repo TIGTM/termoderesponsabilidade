@@ -1,12 +1,13 @@
-
+using Microsoft.AspNetCore.Identity;
+using TermoTI.API.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using TermoTI.API.Data;
 using TermoTI.API.Services;
 using TermoTI.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 builder.Services.AddCors(options =>
 {
@@ -24,6 +25,12 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto;
+});
 
 builder.Services
     .AddAuthentication(options =>
@@ -44,7 +51,9 @@ builder.Services
             options.Cookie.Name = "termo_ti_admin";
             options.Cookie.HttpOnly = true;
             options.Cookie.SecurePolicy =
-                CookieSecurePolicy.SameAsRequest;
+                builder.Environment.IsDevelopment()
+                    ? CookieSecurePolicy.SameAsRequest
+                    : CookieSecurePolicy.Always;
             options.Cookie.SameSite = SameSiteMode.Lax;
 
             options.ExpireTimeSpan = TimeSpan.FromHours(8);
@@ -67,8 +76,6 @@ builder.Services
             };
         }
     )
-
-
     .AddCookie(
         "ColaboradorCookie",
         options =>
@@ -76,7 +83,9 @@ builder.Services
             options.Cookie.Name = "termo_ti_colaborador";
             options.Cookie.HttpOnly = true;
             options.Cookie.SecurePolicy =
-                CookieSecurePolicy.SameAsRequest;
+                builder.Environment.IsDevelopment()
+                    ? CookieSecurePolicy.SameAsRequest
+                    : CookieSecurePolicy.Always;
             options.Cookie.SameSite = SameSiteMode.Lax;
             options.Cookie.Path = "/";
 
@@ -103,7 +112,6 @@ builder.Services
 
 builder.Services.AddAuthorization();
 
-
 builder.Services.AddDbContext<TermoTIDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString(
@@ -112,14 +120,14 @@ builder.Services.AddDbContext<TermoTIDbContext>(options =>
     )
 );
 
-
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<ExcelImportService>();
 
-
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 app.UseHttpsRedirection();
 
@@ -137,5 +145,48 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider
+        .GetRequiredService<TermoTIDbContext>();
+
+    await db.Database.MigrateAsync();
+}
+
+var adminInicial = builder.Configuration["ADMIN_BOOTSTRAP_USER"];
+var senhaInicial = builder.Configuration["ADMIN_BOOTSTRAP_PASSWORD"];
+
+if (!string.IsNullOrWhiteSpace(adminInicial) &&
+    !string.IsNullOrWhiteSpace(senhaInicial))
+{
+    using var scope = app.Services.CreateScope();
+
+    var db = scope.ServiceProvider
+        .GetRequiredService<TermoTIDbContext>();
+
+    var adminExiste = await db.UsuariosAdmin.AnyAsync();
+
+    if (!adminExiste)
+    {
+        var admin = new UsuarioAdmin
+        {
+            Usuario = adminInicial.Trim(),
+            Ativo = true,
+            CriadoEm = DateTime.UtcNow
+        };
+
+        var hasher = new PasswordHasher<UsuarioAdmin>();
+
+        admin.SenhaHash = hasher.HashPassword(
+            admin,
+            senhaInicial
+        );
+
+        db.UsuariosAdmin.Add(admin);
+
+        await db.SaveChangesAsync();
+    }
+}
 
 app.Run();

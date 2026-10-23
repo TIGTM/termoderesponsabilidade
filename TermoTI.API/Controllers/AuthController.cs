@@ -1,12 +1,14 @@
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using TermoTI.API.Data;
+using TermoTI.API.Models;
 
 namespace TermoTI.API.Controllers;
 
@@ -15,6 +17,7 @@ namespace TermoTI.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly TermoTIDbContext _context;
+    private readonly PasswordHasher<UsuarioAdmin> _passwordHasher = new();
 
     public AuthController(TermoTIDbContext context)
     {
@@ -46,17 +49,51 @@ public class AuthController : ControllerBase
             });
         }
 
-        var senhaHash = GerarHash(dto.Senha);
+        var hashAntigo = GerarHashLegado(dto.Senha);
 
-        if (!string.Equals(
-            senhaHash,
-            usuario.SenhaHash,
-            StringComparison.OrdinalIgnoreCase))
+        var hashLegadoValido =
+            usuario.SenhaHash.Length == 64 &&
+            usuario.SenhaHash.All(Uri.IsHexDigit) &&
+            CryptographicOperations.FixedTimeEquals(
+                Encoding.ASCII.GetBytes(hashAntigo),
+                Encoding.ASCII.GetBytes(usuario.SenhaHash.ToUpperInvariant())
+            );
+
+        if (hashLegadoValido)
         {
-            return Unauthorized(new
+            // Atualiza o hash antigo para o formato seguro do ASP.NET Core.
+            usuario.SenhaHash = _passwordHasher.HashPassword(
+                usuario,
+                dto.Senha
+            );
+
+            await _context.SaveChangesAsync();
+        }
+        else
+        {
+            var resultado = _passwordHasher.VerifyHashedPassword(
+                usuario,
+                usuario.SenhaHash,
+                dto.Senha
+            );
+
+            if (resultado == PasswordVerificationResult.Failed)
             {
-                mensagem = "Usuário ou senha inválidos."
-            });
+                return Unauthorized(new
+                {
+                    mensagem = "Usuário ou senha inválidos."
+                });
+            }
+
+            if (resultado == PasswordVerificationResult.SuccessRehashNeeded)
+            {
+                usuario.SenhaHash = _passwordHasher.HashPassword(
+                    usuario,
+                    dto.Senha
+                );
+
+                await _context.SaveChangesAsync();
+            }
         }
 
         var claims = new List<Claim>
@@ -68,13 +105,15 @@ public class AuthController : ControllerBase
 
         var identidade = new ClaimsIdentity(
             claims,
-            CookieAuthenticationDefaults.AuthenticationScheme);
+            CookieAuthenticationDefaults.AuthenticationScheme
+        );
 
         var principal = new ClaimsPrincipal(identidade);
 
         await HttpContext.SignInAsync(
             CookieAuthenticationDefaults.AuthenticationScheme,
-            principal);
+            principal
+        );
 
         return Ok(new
         {
@@ -86,7 +125,8 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> Logout()
     {
         await HttpContext.SignOutAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme);
+            CookieAuthenticationDefaults.AuthenticationScheme
+        );
 
         return Ok(new
         {
@@ -103,7 +143,8 @@ public class AuthController : ControllerBase
         }
 
         var usuarioIdTexto = User.FindFirstValue(
-            ClaimTypes.NameIdentifier);
+            ClaimTypes.NameIdentifier
+        );
 
         if (!int.TryParse(usuarioIdTexto, out var usuarioId))
         {
@@ -114,12 +155,14 @@ public class AuthController : ControllerBase
             .AsNoTracking()
             .FirstOrDefaultAsync(x =>
                 x.Id == usuarioId &&
-                x.Ativo);
+                x.Ativo
+            );
 
         if (usuario == null)
         {
             await HttpContext.SignOutAsync(
-                CookieAuthenticationDefaults.AuthenticationScheme);
+                CookieAuthenticationDefaults.AuthenticationScheme
+            );
 
             return Unauthorized();
         }
@@ -131,7 +174,7 @@ public class AuthController : ControllerBase
         });
     }
 
-    private static string GerarHash(string senha)
+    private static string GerarHashLegado(string senha)
     {
         using var sha256 = SHA256.Create();
 

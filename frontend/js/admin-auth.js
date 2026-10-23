@@ -3,7 +3,7 @@ async function verificarAutenticacaoAdmin() {
     try {
 
         const resposta = await fetch(
-            "http://localhost:5268/api/auth/me",
+            "/api/auth/me",
             {
                 method: "GET",
                 credentials: "include",
@@ -37,7 +37,7 @@ async function verificarAutenticacaoAdmin() {
 
 async function logout() {
     try {
-        const resposta = await fetch("http://localhost:5268/api/auth/logout", {
+        const resposta = await fetch("/api/auth/logout", {
             method: "POST",
             credentials: "include"
         });

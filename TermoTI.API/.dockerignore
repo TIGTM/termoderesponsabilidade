@@ -1,0 +1,13 @@
+﻿bin/
+obj/
+.vs/
+*.user
+*.suo
+*.log
+*.bak
+*.tmp
+appsettings.json
+appsettings.*.json
+!appsettings.example.json
+.env
+.env.*

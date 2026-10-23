@@ -14,7 +14,6 @@ namespace TermoTI.API.Migrations
     [Migration("20261006174448_AddEquipamento")]
     partial class AddEquipamento
     {
-        /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618

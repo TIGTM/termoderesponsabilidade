@@ -4,10 +4,8 @@
 
 namespace TermoTI.API.Migrations
 {
-    /// <inheritdoc />
     public partial class AddDadosAssinatura : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<string>(
@@ -53,7 +51,6 @@ namespace TermoTI.API.Migrations
                 nullable: true);
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
