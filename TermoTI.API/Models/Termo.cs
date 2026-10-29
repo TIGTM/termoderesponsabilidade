@@ -6,6 +6,8 @@ public class Termo
 
     public int ColaboradorId { get; set; }
 
+    public string TipoTermo { get; set; } = "CPF";
+
     public string? Status { get; set; }
 
     public DateTime? DataAssinatura { get; set; }

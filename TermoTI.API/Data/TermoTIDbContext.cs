@@ -63,5 +63,9 @@ public class TermoTIDbContext : DbContext
         modelBuilder.Entity<Termo>()
             .Property(t => t.PrecisaoLocalizacao)
             .HasPrecision(10, 2);
+
+        modelBuilder.Entity<Termo>()
+            .Property(t => t.TipoTermo)
+            .HasDefaultValue("CPF");
     }
 }

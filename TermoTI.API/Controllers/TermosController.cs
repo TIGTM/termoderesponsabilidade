@@ -29,7 +29,6 @@ public class TermosController : ControllerBase
             && colaboradorId > 0;
     }
 
-
     [Authorize(AuthenticationSchemes = ColaboradorScheme)]
     [HttpGet("{id:int}")]
     public async Task<ActionResult> GetTermo(int id)
@@ -44,6 +43,7 @@ public class TermosController : ControllerBase
             {
                 id = t.Id,
                 colaboradorId = t.ColaboradorId,
+                tipoTermo = t.TipoTermo,
                 status = t.Status,
                 dataAssinatura = t.DataAssinatura,
                 criadoEm = t.CriadoEm,
@@ -66,7 +66,6 @@ public class TermosController : ControllerBase
 
         return Ok(termo);
     }
-
 
     [Authorize]
     [HttpGet("/api/admin/termos/{id:int}")]
@@ -124,6 +123,7 @@ public class TermosController : ControllerBase
         {
             id = termo.Id,
             colaboradorId = termo.ColaboradorId,
+            tipoTermo = termo.TipoTermo,
             status = termo.Status,
             dataAssinatura = termo.DataAssinatura,
             assinatura = termo.Assinatura,
@@ -178,6 +178,16 @@ public class TermosController : ControllerBase
             return Forbid(ColaboradorScheme);
         }
 
+        var tipoTermo = dto.TipoTermo?.Trim().ToUpperInvariant();
+
+        if (tipoTermo != "CPF" && tipoTermo != "CNPJ")
+        {
+            return BadRequest(new
+            {
+                mensagem = "O tipo do termo deve ser CPF ou CNPJ."
+            });
+        }
+
         if (dto.Equipamentos == null || !dto.Equipamentos.Any())
         {
             return BadRequest(new
@@ -224,6 +234,7 @@ public class TermosController : ControllerBase
         var termo = new Termo
         {
             ColaboradorId = colaboradorId,
+            TipoTermo = tipoTermo,
             Status = "Pendente",
             DocumentoHTML = dto.DocumentoHTML,
             CriadoEm = DateTime.Now
@@ -255,6 +266,7 @@ public class TermosController : ControllerBase
             {
                 id = termo.Id,
                 colaboradorId = termo.ColaboradorId,
+                tipoTermo = termo.TipoTermo,
                 status = termo.Status,
                 criadoEm = termo.CriadoEm
             }
@@ -392,6 +404,7 @@ public class TermosController : ControllerBase
             {
                 mensagem = "Termo assinado com sucesso.",
                 termoId = termo.Id,
+                tipoTermo = termo.TipoTermo,
                 status = termo.Status,
                 dataAssinatura = termo.DataAssinatura
             });
@@ -443,6 +456,18 @@ public class TermosController : ControllerBase
         if (termo.ColaboradorId != colaboradorId)
             return Forbid(ColaboradorScheme);
 
+        if (termoRecebido.TipoTermo != null &&
+            !string.Equals(
+                termoRecebido.TipoTermo,
+                termo.TipoTermo,
+                StringComparison.OrdinalIgnoreCase))
+        {
+            return BadRequest(new
+            {
+                mensagem = "Não é permitido alterar o tipo de um termo existente."
+            });
+        }
+
         if (termo.Status == "Assinado")
         {
             return BadRequest(new
@@ -478,6 +503,7 @@ public class TermosController : ControllerBase
         {
             id = t.Id,
             colaboradorId = t.ColaboradorId,
+            tipoTermo = t.TipoTermo,
             status = t.Status,
             dataAssinatura = t.DataAssinatura,
             criadoEm = t.CriadoEm,
@@ -507,7 +533,8 @@ public class TermosController : ControllerBase
     [Authorize(AuthenticationSchemes = ColaboradorScheme)]
     [HttpGet("por-colaborador/{colaboradorId:int}")]
     public async Task<ActionResult> GetTermoPorColaborador(
-        int colaboradorId)
+        int colaboradorId,
+        [FromQuery] string tipoTermo = "CPF")
     {
         if (!TentarObterColaboradorAutenticado(out var idAutenticado))
             return Unauthorized();
@@ -515,14 +542,27 @@ public class TermosController : ControllerBase
         if (colaboradorId != idAutenticado)
             return Forbid(ColaboradorScheme);
 
+        tipoTermo = tipoTermo.Trim().ToUpperInvariant();
+
+        if (tipoTermo != "CPF" && tipoTermo != "CNPJ")
+        {
+            return BadRequest(new
+            {
+                mensagem = "O tipo do termo deve ser CPF ou CNPJ."
+            });
+        }
+
         var termo = await _context.Termos
             .AsNoTracking()
-            .Where(t => t.ColaboradorId == idAutenticado)
+            .Where(t =>
+                t.ColaboradorId == idAutenticado &&
+                t.TipoTermo == tipoTermo)
             .OrderByDescending(t => t.CriadoEm)
             .Select(t => new
             {
                 id = t.Id,
                 colaboradorId = t.ColaboradorId,
+                tipoTermo = t.TipoTermo,
                 status = t.Status,
                 dataAssinatura = t.DataAssinatura,
                 criadoEm = t.CriadoEm,

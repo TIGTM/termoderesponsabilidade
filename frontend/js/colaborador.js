@@ -387,6 +387,7 @@ function obterIconeEquipamento(equipamento) {
 
 
 
+
 async function continuarParaTermo() {
     if (!colaboradorSelecionado) {
         mostrarToast("Selecione um colaborador primeiro.", "erro");
@@ -401,12 +402,19 @@ async function continuarParaTermo() {
     }
 
     const dados = coletarDadosFormulario();
+    const documentoNumeros = dados.cpf.replace(/\D/g, "");
+    const tipoTermo = documentoNumeros.length === 14 ? "CNPJ" : "CPF";
+    const documentoFormatado = dados.cpf;
+
+    const cpfParaSalvar = tipoTermo === "CPF"
+        ? documentoFormatado
+        : (colaboradorSelecionado.cpf || "");
 
     const colaboradorAtualizado = {
         id: colaboradorSelecionado.id,
         nome: colaboradorSelecionado.nome || "",
         nomeCompleto: dados.nome,
-        cpf: dados.cpf,
+        cpf: cpfParaSalvar,
         cep: dados.cep,
         rua: dados.rua,
         numero: dados.numero,
@@ -469,7 +477,9 @@ async function continuarParaTermo() {
             "colaboradorTermo",
             JSON.stringify({
                 colaborador: colaboradorSelecionado,
-                equipamentos: equipamentosSelecionados
+                equipamentos: equipamentosSelecionados,
+                tipoTermo,
+                documentoInformado: documentoFormatado
             })
         );
 
@@ -479,8 +489,11 @@ async function continuarParaTermo() {
         );
 
         setTimeout(() => {
-            window.location.href = "termo.html";
+            window.location.href = tipoTermo === "CNPJ"
+                ? "termo-cnpj.html"
+                : "termo.html";
         }, 500);
+
     } catch (erro) {
         console.error("Erro ao atualizar colaborador:", erro);
 
@@ -492,6 +505,7 @@ async function continuarParaTermo() {
         if (botao) botao.disabled = false;
     }
 }
+
 
 function coletarDadosFormulario() {
     const obterValor = id =>
@@ -512,6 +526,7 @@ function coletarDadosFormulario() {
 
 function validarFormulario() {
     const dados = coletarDadosFormulario();
+    const documento = dados.cpf.replace(/\D/g, "");
 
     if (!dados.nome) {
         mostrarToast("Informe o nome completo.", "erro");
@@ -519,8 +534,20 @@ function validarFormulario() {
         return false;
     }
 
-    if (!validarCPF(dados.cpf)) {
-        mostrarToast("Informe um CPF válido.", "erro");
+    if (documento.length === 11) {
+        if (!validarCPF(documento)) {
+            mostrarToast("Informe um CPF válido.", "erro");
+            document.getElementById("cpf")?.focus();
+            return false;
+        }
+    } else if (documento.length === 14) {
+        if (!validarCNPJ(documento)) {
+            mostrarToast("Informe um CNPJ válido.", "erro");
+            document.getElementById("cpf")?.focus();
+            return false;
+        }
+    } else {
+        mostrarToast("Informe um CPF ou CNPJ válido.", "erro");
         document.getElementById("cpf")?.focus();
         return false;
     }
@@ -532,6 +559,41 @@ function validarFormulario() {
     }
 
     return true;
+}
+
+function validarCNPJ(cnpj) {
+    const valor = String(cnpj || "").replace(/\D/g, "");
+
+    if (valor.length !== 14 || /^(\d)\1{13}$/.test(valor)) {
+        return false;
+    }
+
+    const calcularDigito = (base, pesos) => {
+        const soma = base
+            .split("")
+            .reduce((total, numero, indice) => {
+                return total + Number(numero) * pesos[indice];
+            }, 0);
+
+        const resto = soma % 11;
+        return resto < 2 ? 0 : 11 - resto;
+    };
+
+    const primeiroDigito = calcularDigito(
+        valor.substring(0, 12),
+        [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    );
+
+    if (primeiroDigito !== Number(valor[12])) {
+        return false;
+    }
+
+    const segundoDigito = calcularDigito(
+        valor.substring(0, 13),
+        [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2]
+    );
+
+    return segundoDigito === Number(valor[13]);
 }
 
 
@@ -646,7 +708,6 @@ async function visualizarTermo() {
             return;
         }
 
-        // Abre a janela durante o clique para evitar bloqueio de pop-up.
         janela = window.open("", "_blank");
 
         if (!janela) {
@@ -910,7 +971,7 @@ async function baixarTermoAssinado() {
             verificar();
         });
 
-   
+
         if (iframeDocument.fonts && iframeDocument.fonts.ready) {
             await iframeDocument.fonts.ready;
         }
@@ -931,7 +992,7 @@ async function baixarTermoAssinado() {
             })
         );
 
- 
+
         await new Promise(resolve => {
             iframe.contentWindow.requestAnimationFrame(() => {
                 iframe.contentWindow.requestAnimationFrame(resolve);
@@ -1064,32 +1125,62 @@ function configurarBusca() {
 }
 
 function configurarMascaras() {
+
     const cpf = document.getElementById("cpf");
 
     if (cpf) {
         cpf.addEventListener("input", () => {
-            let valor = cpf.value.replace(/\D/g, "").slice(0, 11);
+            const numeros = cpf.value
+                .replace(/\D/g, "")
+                .slice(0, 14);
 
-            if (valor.length > 9) {
-                valor = valor.replace(
-                    /^(\d{3})(\d{3})(\d{3})(\d{1,2})$/,
-                    "$1.$2.$3-$4"
-                );
-            } else if (valor.length > 6) {
-                valor = valor.replace(
-                    /^(\d{3})(\d{3})(\d{1,3})$/,
-                    "$1.$2.$3"
-                );
-            } else if (valor.length > 3) {
-                valor = valor.replace(
-                    /^(\d{3})(\d{1,3})$/,
-                    "$1.$2"
-                );
+            let valor = numeros;
+
+            if (numeros.length <= 11) {
+                if (numeros.length > 9) {
+                    valor = numeros.replace(
+                        /^(\d{3})(\d{3})(\d{3})(\d{1,2})$/,
+                        "$1.$2.$3-$4"
+                    );
+                } else if (numeros.length > 6) {
+                    valor = numeros.replace(
+                        /^(\d{3})(\d{3})(\d{1,3})$/,
+                        "$1.$2.$3"
+                    );
+                } else if (numeros.length > 3) {
+                    valor = numeros.replace(
+                        /^(\d{3})(\d{1,3})$/,
+                        "$1.$2"
+                    );
+                }
+            } else {
+                if (numeros.length > 12) {
+                    valor = numeros.replace(
+                        /^(\d{2})(\d{3})(\d{3})(\d{4})(\d{1,2})$/,
+                        "$1.$2.$3/$4-$5"
+                    );
+                } else if (numeros.length > 8) {
+                    valor = numeros.replace(
+                        /^(\d{2})(\d{3})(\d{3})(\d{1,4})$/,
+                        "$1.$2.$3/$4"
+                    );
+                } else if (numeros.length > 5) {
+                    valor = numeros.replace(
+                        /^(\d{2})(\d{3})(\d{1,3})$/,
+                        "$1.$2.$3"
+                    );
+                } else if (numeros.length > 2) {
+                    valor = numeros.replace(
+                        /^(\d{2})(\d{1,3})$/,
+                        "$1.$2"
+                    );
+                }
             }
 
             cpf.value = valor;
         });
     }
+
 
     const cep = document.getElementById("cep");
 

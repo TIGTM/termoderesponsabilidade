@@ -4,705 +4,419 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Termo de Responsabilidade - GTM</title>
-
     <link rel="stylesheet" href="css/style.css">
-    <link rel="icon" type="assets/gt" href="assets/icone-gtm.ico">
-
+    <link rel="icon" type="image/x-icon" href="assets/icone-gtm.ico">
 </head>
 
 <body class="termo-body">
-
     <header class="topbar termo-topbar">
-
         <div class="brand">
-
             <img src="assets/icone-gtm.png" alt="GTM">
-
             <div class="brand-text">
-
-                <strong>
-                    Termos de Responsabilidade
-                </strong>
-
-                <span>
-                    Área do colaborador
-                </span>
-
+                <strong>Termos de Responsabilidade</strong>
+                <span>Área do colaborador</span>
             </div>
-
         </div>
-
-
-        <button type="button" class="btn-secondary" id="btnVoltar">
-            Voltar
-        </button>
-
+        <button type="button" class="btn-secondary" id="btnVoltar">Voltar</button>
     </header>
 
-
     <main class="termo-container">
-
         <section class="termo-header">
-
             <div>
-
-                <h1>
-                    Termo de Responsabilidade
-                </h1>
-
-                <p>
-                    Confira todas as informações antes de realizar a assinatura.
-                </p>
-
+                <h1>Termo de Responsabilidade</h1>
+                <p>Confira todas as informações antes de realizar a assinatura.</p>
             </div>
-
-            <div id="statusTermo" class="termo-status">
-                PENDENTE DE ASSINATURA
-            </div>
-
+            <div id="statusTermo" class="termo-status">PENDENTE DE ASSINATURA</div>
         </section>
-
 
         <section class="document-wrapper">
-
             <div id="documento">
-
-
                 <div class="document-page">
-
                     <div class="document-content">
+                        <h1 class="document-title">ANEXO: CONTRATO DE COMODATO DE EQUIPAMENTOS</h1>
 
-                        <h1 class="document-title">
-                            CONTRATO DE COMODATO DE EQUIPAMENTOS
-                        </h1>
-
-
-                        <p>
-                            Pelo presente instrumento particular, as partes, de um lado,
-                            <strong>GTM COMÉRCIO E DISTRIBUIÇÃO LTDA</strong>,
-                            sociedade empresária limitada, inscrita no CNPJ nº
-                            <strong>29.467.080/0001-71</strong>, com sede na Rua Santiago
-                            Ballesteros, 680, sl. 03, Bairro Cinco, Contagem, Minas Gerais,
-                            CEP: 32.010-050, Inscrição Estadual: 003112585.00-27,
-                            neste ato representada pelo sócio RODRIGO ALVARENGA ROCHA,
-                            doravante designada COMODANTE e de outro lado,
+                        <p>Pelo presente instrumento particular, as partes, de um lado, <strong>GTM COMÉRCIO E
+                                DISTRIBUIÇÃO LTDA</strong>, sociedade empresária limitada, inscrita no CNPJ nº
+                            <strong>29.467.080/0002-52</strong>, com filial na Av. Amazonas, nº 2095, loja 01-parte,
+                            Bairro Santo Agostinho, Belo Horizonte, Minas Gerais, CEP 30.180-007, representada por seus
+                            sócios Rodrigo Alvarenga Rocha e Pedro Henrique Barbosa Rivelli, doravante designada
+                            <strong>COMODANTE</strong>; e, de outro lado, o prestador de serviços identificado neste
+                            instrumento, neste ato representado por <strong><span class="dado-usuario" id="docNome">Nome
+                                    do representante</span></strong>, inscrito no CPF sob nº <strong><span
+                                    class="dado-usuario" id="docCPF">CPF</span></strong>, doravante designado
+                            <strong>COMODATÁRIO</strong>.
+                        </p>
+                        <p>Para fins de identificação do representante do COMODATÁRIO, constam os seguintes dados de
+                            contato: endereço na Rua <span class="dado-usuario" id="docRua">Rua</span>, nº <span
+                                class="dado-usuario" id="docNumero">Número</span>, bairro <span class="dado-usuario"
+                                id="docBairro">Bairro</span>, <span class="dado-usuario"
+                                id="docCidade">Cidade</span>/<span class="dado-usuario" id="docEstado">UF</span>, CEP
+                            <span class="dado-usuario" id="docCEP">00000-000</span>, telefone <span class="dado-usuario"
+                                id="docTelefone">(00) 00000-0000</span>.
                         </p>
 
-
-                        <p>
-                            <span class="dado-usuario" id="docNome">
-                                Nome do Colaborador
-                            </span>,
-                            inscrito no CPF sob nº
-                            <span class="dado-usuario" id="docCPF">
-                                000.000.000-00
-                            </span>,
-                            reside na Rua
-                            <span class="dado-usuario" id="docRua">
-                                Rua
-                            </span>,
-                            <span class="dado-usuario" id="docNumero">
-                                Número
-                            </span>,
-                            <span class="dado-usuario" id="docBairro">
-                                Bairro
-                            </span>,
-                            <span class="dado-usuario" id="docCidade">
-                                Cidade
-                            </span>,
-                            <span class="dado-usuario" id="docEstado">
-                                Estado
-                            </span>,
-                            Cep:
-                            <span class="dado-usuario" id="docCEP">
-                                00000-00
-                            </span>,
-                            telefone:
-                            <span class="dado-usuario" id="docTelefone">
-                                (00) 00000-0000
-                            </span>,
-                            doravante designado COMODATÁRIO e
+                        <p>CONSIDERANDO que o COMODATÁRIO presta serviços à COMODANTE e que, no desenvolvimento de suas
+                            atividades, necessita fazer uso dos equipamentos denominados simplesmente
+                            <strong>EQUIPAMENTOS</strong>, relacionados abaixo:
                         </p>
+                        <div id="equipamentosDocumento"></div>
 
+                        <p>CONSIDERANDO que a COMODANTE pretende ceder os equipamentos em comodato, com o que o
+                            COMODATÁRIO concorda integralmente.</p>
+                        <p>As partes resolvem celebrar o presente CONTRATO DE COMODATO, feito exclusivamente em razão da
+                            prestação de serviços objeto de contrato firmado entre as partes, que passa a vigorar de
+                            acordo com as seguintes cláusulas e condições:</p>
 
-                        <p>
-                            CONSIDERANDO que o COMODATÁRIO é funcionário da COMODANTE,
-                            e que no desenvolvimento de seu trabalho, necessita fazer uso
-                            dos equipamentos doravante denominados simplesmente
-                            EQUIPAMENTOS referidos neste contrato, conforme abaixo:
+                        <h2>CLÁUSULA PRIMEIRA — DO OBJETO</h2>
+                        <p><strong>1.1.</strong> É objeto deste contrato o comodato dos equipamentos pela COMODANTE ao
+                            COMODATÁRIO, que se compromete a utilizá-los unicamente para fins relativos à prestação dos
+                            serviços contratados e de acordo com os interesses da COMODANTE.</p>
+                        <p><strong>1.2.</strong> A COMODANTE entrega, neste ato, os equipamentos para uso do COMODATÁRIO
+                            em perfeito estado de conservação. Caso exista qualquer defeito ou imperfeição, a ocorrência
+                            deverá ser registrada.</p>
+
+                        <h2>CLÁUSULA SEGUNDA — DO USO DOS EQUIPAMENTOS</h2>
+                        <p><strong>2.1.</strong> O COMODATÁRIO compromete-se a operar e manusear os equipamentos como se
+                            fossem seus, mantendo-os em boas condições de uso e funcionamento durante a vigência deste
+                            contrato, não podendo transferi-los ou emprestá-los a terceiros sem autorização da
+                            COMODANTE.</p>
+                        <p><strong>2.2.</strong> O COMODATÁRIO não poderá alterar a configuração ou qualquer outra
+                            característica dos equipamentos sem aprovação prévia e por escrito da COMODANTE, incluindo
+                            configurações de software ou hardware.</p>
+                        <p><strong>2.3.</strong> Alterações ou instalações de softwares não autorizados pela COMODANTE
+                            poderão acarretar responsabilização do COMODATÁRIO, conforme a legislação aplicável e as
+                            normas internas pertinentes.</p>
+                        <p><strong>2.4.</strong> O COMODATÁRIO compromete-se a utilizar os equipamentos e seus
+                            acessórios conforme as orientações do fabricante, responsabilizando-se pelos danos
+                            decorrentes de dolo ou culpa, inclusive negligência, imprudência ou imperícia, mediante a
+                            devida apuração. A COMODANTE providenciará a manutenção necessária, ressalvados os danos
+                            imputáveis ao COMODATÁRIO.</p>
+                        <p><strong>2.5.</strong> O COMODATÁRIO declara receber os equipamentos e seus acessórios,
+                            incluindo, quando fornecidos, película protetora, capa, carregador, cabo, teclado e mouse,
+                            em perfeito estado de conservação e funcionamento. Será responsável por perda, extravio,
+                            quebra ou dano decorrente de uso inadequado, queda, manuseio incorreto ou utilização de
+                            carregadores e acessórios incompatíveis, devendo reparar o item ou indenizar sua
+                            substituição por outro equivalente, mediante prévia apuração e comprovação de sua
+                            responsabilidade. Não haverá responsabilização por desgaste natural decorrente do uso
+                            regular.</p>
+
+                        <h2>CLÁUSULA TERCEIRA — DA TITULARIDADE</h2>
+                        <p><strong>3.1.</strong> Os equipamentos são e permanecerão de propriedade única e exclusiva da
+                            COMODANTE.</p>
+
+                        <h2>CLÁUSULA QUARTA — DOS DEFEITOS, ROUBOS E FURTOS</h2>
+                        <p><strong>4.1.</strong> O COMODATÁRIO deverá relatar à COMODANTE qualquer defeito ou
+                            anormalidade que ocorra nos equipamentos. Caso a COMODANTE entenda necessário em razão do
+                            defeito ou da anormalidade, os equipamentos deverão ser prontamente devolvidos.</p>
+                        <p><strong>4.2.</strong> Se for constatado que o defeito decorreu de culpa ou dolo do
+                            COMODATÁRIO, este arcará com os custos de reparo dos equipamentos, incluindo peças, mão de
+                            obra e demais despesas necessárias, mediante comprovação. Se o conserto não for possível, o
+                            COMODATÁRIO deverá indenizar a COMODANTE pelo valor de reposição do bem, observado o valor
+                            de mercado à época do evento e considerada a depreciação pelo uso normal.</p>
+                        <p><strong>4.3.</strong> Os consertos deverão ser realizados em locais autorizados ou
+                            especializados indicados pela COMODANTE, com emissão da respectiva nota fiscal e garantia
+                            dos reparos. Quando possível o conserto, a indenização será calculada com base em seu custo;
+                            caso seja impossível, poderá haver substituição por outro equipamento compatível, respeitada
+                            a depreciação.</p>
+                        <p><strong>4.4.</strong> O COMODATÁRIO também será responsável por indenizar a COMODANTE por
+                            outros danos relacionados ao uso dos equipamentos que lhe sejam atribuíveis, mediante
+                            apuração e comprovação.</p>
+                        <p><strong>4.5.</strong> O COMODATÁRIO deverá adotar medidas razoáveis de cuidado, guarda e
+                            segurança dos equipamentos, sendo vedado deixá-los expostos ou desacompanhados em veículos,
+                            mesas ou outros locais públicos, especialmente em condições que facilitem furto ou roubo.
+                            Deverá transportá-los e armazená-los de forma segura, conforme as orientações deste guia.
                         </p>
-
-
-                        <div id="equipamentosDocumento">
-                        </div>
-
-
-                        <p>
-                            CONSIDERANDO que a COMODANTE pretende ceder em comodato os
-                            equipamentos, com o que o COMODATÁRIO concorda integralmente.
-                        </p>
-
-
-                        <p>
-                            As partes resolvem celebrar o presente CONTRATO DE COMODATO,
-                            feito exclusivamente em razão do contrato de trabalho firmado
-                            entre as Partes, que passa a vigorar de acordo com as seguintes
-                            cláusulas e condições:
-                        </p>
-
-
-                        <h2>
-                            CLÁUSULA PRIMEIRA- DO OBJETO
-                        </h2>
-
-
-                        <p>
-                            <strong>1.1</strong>
-                            É objeto deste contrato o Comodato dos equipamentos, pela
-                            COMODANTE ao COMODATÁRIO, que se compromete a utilizar os
-                            equipamentos unicamente para fins relativos ao contrato de
-                            trabalho e de acordo com os interesses da COMODANTE.
-                        </p>
-
-
-                        <p>
-                            <strong>1.2</strong>
-                            A COMODANTE entrega, neste ato, os equipamentos, para uso do
-                            COMODATÁRIO em perfeito estado de conservação. (Caso haja
-                            qualquer defeito ou imperfeição – será registrado).
-                        </p>
-
-
-                        <h2>
-                            CLÁUSULA SEGUNDA- DO USO DO EQUIPAMENTO
-                        </h2>
-
-
-                        <p>
-                            <strong>2.1</strong>
-                            O COMODATÁRIO compromete-se a operar e manusear os equipamentos
-                            como se seus fossem mantendo-os em boas condições de uso e
-                            funcionamento durante o tempo de vigência deste Contrato,
-                            não podendo transferir, nem o emprestar a terceiros estranhos
-                            a relação contratual.
-                        </p>
-
-
-                        <p>
-                            <strong>2.2</strong>
-                            O COMODATÁRIO não alterará a configuração ou qualquer outra
-                            característica dos equipamentos, sem a aprovação prévia e
-                            escrita da COMODANTE, sejam configurações de Software ou de
-                            Hardware.
-                        </p>
-
-
-                        <p>
-                            <strong>2.3</strong>
-                            Quaisquer alterações ou instalação de softwares não autorizados
-                            pela COMODANTE poderá acarretar ônus para o COMODATÁRIO,
-                            conforme penas previstas pela legislação brasileira sobre
-                            direitos autorais e normais internas.
-                        </p>
-
-
-                        <h2>
-                            CLÁUSULA TERCEIRA- DA TITULARIDADE
-                        </h2>
-
-
-                        <p>
-                            <strong>3.1</strong>
-                            Os equipamentos são e permanecerão na propriedade única e
-                            exclusiva da COMODANTE.
-                        </p>
-
-
-                        <h2>
-                            CLAUSULA QUARTA- DOS DEFEITOS, DO ROUBO E DE FURTOS
-                        </h2>
-
-
-                        <p>
-                            <strong>4.1</strong>
-                            O COMODATÁRIO relatará qualquer defeito ou anormalidade que
-                            ocorra no(s) equipamento(s) à COMODANTE e, caso a COMODANTE
-                            assim entenda necessário, em razão do defeito ou anormalidade,
-                            o(s) equipamento(s) serão prontamente devolvidos à COMODANTE.
-                        </p>
-
-
-                        <p>
-                            <strong>4.2</strong>
-                            Caso seja constatado que o defeito foi derivado de culpa ou dolo,
-                            o COMODATÁRIO arcará com todos os custos relativos à manutenção
-                            do(s) equipamento(s) (peças e serviços). Caso não seja possível
-                            o conserto, arcará com o valor residual de depreciação do referido
-                            equipamento.
-                        </p>
-
-
-                        <p>
-                            <strong>4.3</strong>
-                            Os consertos deverão ser realizados em locais autorizados ou
-                            especializados, indicados pela COMODANTE, com a emissão da
-                            respectiva nota fiscal e garantia dos reparos. Poderá a COMODANTE
-                            descontar o valor do reparo a título de indenização da nota fiscal
-                            dos serviços para posterior conserto. Nesse caso o princípio
-                            indenizatório será o da adequada e razoável reparação, isto é:
-                            onde possível o conserto, a indenização será calculada com base
-                            no valor deste; caso impossível o conserto, haverá substituição
-                            do(s) equipamento(s) por outro compatível ao entregue em Comodato,
-                            respeitada a depreciação.
-                        </p>
-
+                        <p><strong>4.6.</strong> Em caso de roubo ou furto, o COMODATÁRIO deverá comunicar imediatamente
+                            o ocorrido à COMODANTE e registrar a ocorrência perante a autoridade policial competente,
+                            entregando à empresa o respectivo boletim de ocorrência.</p>
+                        <p><strong>4.7.</strong> Em caso de furto ou roubo, o COMODATÁRIO somente responderá pela
+                            indenização quando comprovados dolo ou culpa, inclusive negligência, imprudência ou
+                            imperícia, ou descumprimento dos deveres contratuais de guarda e segurança, desde que haja
+                            nexo entre sua conduta e o prejuízo. Nessa hipótese, a indenização corresponderá ao custo de
+                            reparação ou, se inviável, ao valor de reposição por bem equivalente, considerada a
+                            depreciação decorrente do uso regular e mediante comprovação.</p>
+                        <p><strong>4.8.</strong> A responsabilidade prevista nesta cláusula abrange, quando
+                            comprovadamente decorrentes de conduta dolosa ou culposa do COMODATÁRIO, danos como telas ou
+                            películas rachadas em razão de quedas, avarias em celulares e computadores, danos a
+                            carregadores e demais acessórios, bem como perdas decorrentes de guarda inadequada,
+                            inclusive quando os itens forem deixados à vista ou desacompanhados em veículos, mesas ou
+                            locais públicos. A responsabilização dependerá da apuração dos fatos e da comprovação do
+                            dano e do nexo causal, não abrangendo o desgaste natural pelo uso regular.</p>
                     </div>
-
                 </div>
 
+                <div class="document-page">
+                    <div class="document-content">
+                        <h2>CLÁUSULA QUINTA — DO PRAZO E DA RESCISÃO</h2>
+                        <p><strong>5.1.</strong> O presente contrato vigorará durante o período de prestação de serviços
+                            pelo COMODATÁRIO, podendo ser rescindido pela COMODANTE a qualquer tempo, mediante
+                            comunicação ao COMODATÁRIO, sem prejuízo da obrigação de devolução dos equipamentos.</p>
+                        <p><strong>5.2.</strong> O descumprimento das obrigações previstas neste contrato poderá ensejar
+                            sua rescisão, sem prejuízo da apuração de eventuais responsabilidades e perdas e danos. O
+                            COMODATÁRIO deverá devolver os equipamentos no prazo indicado pela COMODANTE, observadas as
+                            condições da Cláusula Sexta.</p>
+
+                        <h2>CLÁUSULA SEXTA — DA DEVOLUÇÃO DOS EQUIPAMENTOS</h2>
+                        <p><strong>6.1.</strong> Com o término do contrato de prestação de serviços, o COMODATÁRIO
+                            compromete-se a devolver imediatamente os equipamentos, nas mesmas condições de conservação
+                            em que os recebeu, respeitado o desgaste normal pelo uso regular.</p>
+                        <p><strong>6.2.</strong> Sempre que solicitado pela COMODANTE, o COMODATÁRIO compromete-se a
+                            devolver os equipamentos nas mesmas condições de conservação em que os recebeu, resguardado
+                            o desgaste normal pelo uso regular.</p>
+                        <p><strong>6.3.</strong> A devolução deverá ocorrer, preferencialmente, na sede da COMODANTE,
+                            mediante agendamento prévio, em horário comercial, com conferência dos equipamentos e
+                            acessórios entregues.</p>
+                        <p><strong>6.4.</strong> Caso a devolução na sede não seja possível, as partes poderão definir,
+                            de comum acordo e por escrito, local ou modalidade alternativa de entrega. Eventuais custos
+                            com transporte, embalagem e seguro correrão por conta do COMODATÁRIO, conforme acordado
+                            entre as partes.</p>
+                        <p><strong>6.5.</strong> O descumprimento da obrigação de devolução no prazo estipulado poderá
+                            sujeitar o COMODATÁRIO às consequências previstas contratualmente, inclusive multa não
+                            compensatória de até 100% (cem por cento) dos valores atualizados dos equipamentos
+                            descritos, observada a depreciação pelo uso normal, sem prejuízo da obrigação de devolução e
+                            de eventual indenização suplementar por perdas e danos devidamente comprovados, inclusive
+                            nas hipóteses de extravio, dano ou retenção indevida.</p>
+                        <p><strong>6.6.</strong> A perda, o extravio, a retenção indevida ou a devolução de equipamentos
+                            danificados serão apurados conforme as disposições da Cláusula Quarta, observada a
+                            necessidade de comprovação da responsabilidade do COMODATÁRIO, quando exigível, e ressalvado
+                            o desgaste natural decorrente do uso regular.</p>
+
+                        <h2>CLÁUSULA SÉTIMA — DAS DISPOSIÇÕES FINAIS</h2>
+                        <p><strong>7.1.</strong> Para dirimir dúvidas decorrentes deste contrato, as partes elegem o
+                            foro da Comarca de Belo Horizonte, com expressa renúncia a qualquer outro, por mais
+                            privilegiado que seja.</p>
+
+
+                        <p class="data-documento">Belo Horizonte, <span id="dataContrato">__________</span> de <span
+                                id="mesContrato">___________</span> de <span id="anoContrato">___________</span>.</p>
+                        <div class="assinaturas-documento">
+                            <div class="assinatura-bloco">
+                                <div class="linha-assinatura"></div>
+                                <strong>COMODANTE — GTM COMÉRCIO E DISTRIBUIÇÃO LTDA</strong>
+                                <span>CNPJ: 29.467.080/0001-71</span>
+                            </div>
+                            <div class="assinatura-bloco">
+                                <div class="assinatura-imagem-container"><img id="assinaturaContrato"
+                                        class="assinatura-imagem" alt="Assinatura do representante do comodatário">
+                                </div>
+                                <div class="linha-assinatura"></div>
+                                <strong>COMODATÁRIO — <span id="assinaturaNomeContrato">Nome do
+                                        representante</span></strong>
+                                <span>CPF: <span id="assinaturaCPFContrato">CPF</span></span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
 
                 <div class="document-page">
-
                     <div class="document-content">
+                        <h1 class="document-title">GUIA DE MELHORES PRÁTICAS E POLÍTICAS PARA NOTEBOOKS, CELULARES E
+                            ACESSÓRIOS</h1>
+                        <p>Ao representante do COMODATÁRIO: <span class="dado-usuario" id="guiaNome">Nome do
+                                representante</span></p>
+                        <p><strong>Caro Comodatário,</strong></p>
+                        <p>Leia cuidadosamente este guia. Ele foi elaborado para contribuir para a durabilidade dos
+                            equipamentos e para manter as configurações padrão da GTM COMÉRCIO E DISTRIBUIÇÃO LTDA,
+                            assim como o bom funcionamento de seus recursos.</p>
 
-                        <p>
-                            <strong>4.4</strong>
-                            O COMODATÁRIO será, ainda, responsável, por indenizar a COMODANTE
-                            por outros danos causados e a ela atribuíveis relacionados a fatos
-                            derivados do uso do(s) equipamento(s).
+                        <h2>1. COMPUTADORES, CELULARES E ACESSÓRIOS</h2>
+                        <p><strong>1.1.</strong> Todos os equipamentos, acessórios e softwares disponibilizados são de
+                            propriedade da COMODANTE e deverão ser utilizados e conservados conforme as disposições do
+                            Termo de Comodato.</p>
+                        <p><strong>1.2.</strong> Os equipamentos possuem componentes eletrônicos sensíveis e devem ser
+                            manuseados, transportados e armazenados com cuidado. Utilize bolsas próprias e acolchoadas
+                            para notebooks; evite quedas, impactos, riscos, contato com líquidos, umidade, poeira, calor
+                            excessivo ou luz solar direta.</p>
+                        <p><strong>1.3.</strong> O COMODATÁRIO deverá zelar pelos equipamentos e acessórios recebidos,
+                            incluindo, quando fornecidos, capas, películas protetoras, carregadores, cabos, teclados e
+                            mouses, devolvendo-os nas mesmas condições de conservação em que foram recebidos, ressalvado
+                            o desgaste natural decorrente do uso regular.</p>
+                        <p><strong>1.4.</strong> Os equipamentos deverão ser utilizados exclusivamente para atividades
+                            relacionadas à prestação de serviços, sendo vedado o empréstimo ou a transferência a
+                            terceiros sem autorização prévia da COMODANTE.</p>
+                        <p><strong>1.5.</strong> Utilize carregadores e acessórios compatíveis com as especificações do
+                            fabricante. Evite puxar cabos pelo fio, forçar conectores, apoiar objetos pesados sobre os
+                            aparelhos ou manuseá-los de maneira que possa provocar quedas e danos às telas, películas ou
+                            componentes.</p>
+                        <p><strong>1.6.</strong> Em caso de defeito, dano, queda, perda, extravio, furto ou roubo,
+                            comunique imediatamente a COMODANTE. Em caso de furto ou roubo, providencie o registro da
+                            ocorrência perante a autoridade policial e encaminhe o respectivo boletim de ocorrência à
+                            empresa.</p>
+                        <p><strong>1.7.</strong> A responsabilização por danos, perdas, extravios, furtos ou roubos
+                            dependerá da apuração dos fatos e da comprovação de dolo ou culpa do COMODATÁRIO, inclusive
+                            negligência, imprudência ou imperícia, quando aplicável, observadas as disposições do Termo
+                            de Comodato. Não haverá responsabilização por desgaste natural decorrente do uso regular.
                         </p>
 
+                        <h2>2. PADRÕES DE SOFTWARE E SEGURANÇA DA INFORMAÇÃO</h2>
+                        <p><strong>2.1.</strong> Os computadores poderão conter softwares padronizados pela GTM, como
+                            Microsoft Office, Outlook e outras aplicações autorizadas. A instalação de programas
+                            adicionais dependerá de autorização prévia da COMODANTE, para prevenir riscos de segurança,
+                            incompatibilidades técnicas e violações de licenças.</p>
+                        <p><strong>2.2.</strong> É vedado desinstalar softwares corporativos, alterar configurações,
+                            modificar componentes ou realizar intervenções nos equipamentos sem autorização prévia da
+                            COMODANTE.</p>
+                        <p><strong>2.3.</strong> Ao utilizar os equipamentos fora das dependências da empresa, tenha
+                            cuidado ao conectar-se a redes Wi-Fi públicas ou desconhecidas. Sempre que possível, utilize
+                            redes confiáveis e os recursos de segurança disponibilizados pela empresa.</p>
+                        <p><strong>2.4.</strong> Mantenha senhas e credenciais de acesso protegidas, não as compartilhe
+                            com terceiros e não permita o acesso de pessoas não autorizadas aos equipamentos ou às
+                            informações corporativas.</p>
+                        <p><strong>2.5.</strong> Não armazene, compartilhe ou transmita informações corporativas por
+                            meios não autorizados. Em caso de perda, roubo ou suspeita de acesso indevido, informe
+                            imediatamente a COMODANTE para que sejam adotadas as medidas de segurança cabíveis.</p>
 
-                        <p>
-                            <strong>4.5</strong>
-                            O COMODATÁRIO compromete-se a tomar todos os cuidados para evitar
-                            que os equipamentos venham a ser furtados ou roubados, assumindo
-                            o compromisso de guardá-los e transportá-los de modo seguro
-                            conforme recomendações anexas.
+                        <h2>3. BACKUPS E CÓPIAS DE SEGURANÇA</h2>
+                        <p><strong>3.1.</strong> Salve e mantenha arquivos profissionais importantes nos ambientes
+                            corporativos de armazenamento em nuvem autorizados pela COMODANTE, como Microsoft 365 ou
+                            outro sistema indicado pela empresa.</p>
+                        <p><strong>3.2.</strong> Evite manter a única cópia de documentos profissionais importantes
+                            exclusivamente no armazenamento local do computador ou celular.</p>
+                        <p><strong>3.3.</strong> Em caso de falha, perda, furto ou roubo do equipamento, comunique
+                            imediatamente a COMODANTE, permitindo a adoção das providências necessárias para proteger as
+                            informações e restabelecer o acesso aos arquivos.</p>
+
+                        <h2>4. MANUTENÇÃO E COMUNICAÇÃO DE OCORRÊNCIAS</h2>
+                        <p><strong>4.1.</strong> Caso seja identificada a necessidade de manutenção, reparo ou
+                            substituição de qualquer componente, comunique a COMODANTE e aguarde as orientações para o
+                            encaminhamento do equipamento.</p>
+                        <p><strong>4.2.</strong> Não abra os equipamentos, não tente realizar reparos por conta própria
+                            e não os encaminhe a assistências técnicas sem autorização da COMODANTE.</p>
+                        <p><strong>4.3.</strong> Qualquer queda, rachadura na tela ou película, quebra de acessórios,
+                            falha de funcionamento ou outro dano deverá ser comunicado imediatamente, com descrição das
+                            circunstâncias do ocorrido.</p>
+                        <p><strong>4.4.</strong> Quando comprovado que o dano decorreu de dolo ou culpa do COMODATÁRIO,
+                            inclusive por negligência, imprudência, imperícia ou uso inadequado, poderá haver
+                            responsabilização pelos custos de reparo ou pela reposição do bem, conforme o Termo de
+                            Comodato, mediante apuração e comprovação do prejuízo.</p>
+                        <p><strong>4.5.</strong> O desgaste natural decorrente do uso regular não será considerado, por
+                            si só, motivo para responsabilização do COMODATÁRIO.</p>
+                    </div>
+                </div>
+
+                <div class="document-page">
+                    <div class="document-content">
+                        <h2>5. MELHORES PRÁTICAS PARA A SEGURANÇA DE NOTEBOOKS E CELULARES</h2>
+                        <p><strong>5.1.</strong> Não presuma que os equipamentos estão seguros apenas por estarem
+                            próximos de você. Mantenha-os sob vigilância e adote medidas preventivas para evitar furtos,
+                            roubos e acessos não autorizados.</p>
+                        <p><strong>5.2.</strong> Nunca deixe notebooks, celulares ou outros equipamentos à vista dentro
+                            de veículos, mesmo que estejam trancados ou que a parada seja rápida. Sempre que possível,
+                            evite transportar ou armazenar equipamentos em veículos estacionados em locais públicos.
+                            Caso seja necessário transportá-los no veículo, mantenha-os fora da vista, preferencialmente
+                            no porta-malas, antes de chegar ao local de estacionamento, sem realizar essa operação em
+                            público de forma que exponha os equipamentos.</p>
+                        <p><strong>5.3.</strong> Não deixe celulares ou notebooks desacompanhados sobre mesas de
+                            restaurantes, cafeterias, praças, salas de espera ou outros locais públicos. Ao se afastar,
+                            leve-os consigo ou guarde-os em local seguro.</p>
+                        <p><strong>5.4.</strong> Evite deixar os equipamentos dentro de veículos expostos ao sol ou a
+                            temperaturas elevadas, pois o calor excessivo pode danificar baterias, telas e componentes
+                            eletrônicos.</p>
+                        <p><strong>5.5.</strong> Durante deslocamentos, mantenha os equipamentos protegidos e evite
+                            manuseá-los em situações que aumentem o risco de queda ou subtração. Em locais públicos,
+                            redobre a atenção e não exponha desnecessariamente os aparelhos.</p>
+                        <p><strong>5.6.</strong> A prevenção depende de hábitos cotidianos. A adoção de medidas simples
+                            de cuidado, vigilância e armazenamento seguro reduz os riscos de incidentes e contribui para
+                            a proteção dos equipamentos e das informações corporativas.</p>
+                        <p><strong>5.7.</strong> O furto ou roubo não gera responsabilidade automática do COMODATÁRIO.
+                            Entretanto, se ficar comprovado que o prejuízo decorreu de dolo ou culpa, inclusive
+                            negligência, imprudência ou imperícia, ou do descumprimento dos deveres de guarda e
+                            segurança previstos no Termo de Comodato, poderá haver responsabilização, observados a
+                            apuração dos fatos, o nexo causal e os prejuízos comprovados.</p>
+
+                        <h2>6. DEVOLUÇÃO DOS EQUIPAMENTOS</h2>
+                        <p><strong>6.1.</strong> Ao término ou à rescisão do contrato de prestação de serviços, ou
+                            quando solicitada a devolução pela COMODANTE, o COMODATÁRIO deverá entregar os equipamentos
+                            e todos os acessórios recebidos no prazo aplicável, conforme o Termo de Comodato.</p>
+                        <p><strong>6.2.</strong> Os equipamentos deverão ser devolvidos preferencialmente na sede da
+                            COMODANTE, mediante agendamento prévio, acompanhados dos acessórios fornecidos e nas
+                            condições de conservação compatíveis com o uso regular.</p>
+                        <p><strong>6.3.</strong> A devolução deverá ser documentada, preferencialmente por meio de
+                            recibo ou termo de entrega, com identificação dos equipamentos e acessórios devolvidos.</p>
+                        <p><strong>6.4.</strong> O atraso injustificado, a recusa ou a retenção indevida dos
+                            equipamentos poderá gerar as consequências previstas no Termo de Comodato, observadas as
+                            condições contratuais e a legislação aplicável.</p>
+
+                        <h2>7. DISPOSIÇÕES FINAIS</h2>
+                        <p><strong>7.1.</strong> Este guia complementa o Termo de Comodato e deve ser observado pelo
+                            COMODATÁRIO durante todo o período em que estiver sob sua guarda qualquer equipamento ou
+                            acessório de propriedade da COMODANTE.</p>
+                        <p><strong>7.2.</strong> Em caso de dúvida, ocorrência ou necessidade de orientação, o
+                            COMODATÁRIO deverá entrar em contato com a COMODANTE antes de realizar qualquer procedimento
+                            que possa comprometer a segurança, o funcionamento ou a conservação dos equipamentos.</p>
+                        <p><strong>7.3.</strong> As orientações deste guia não afastam a necessidade de apuração
+                            individual dos fatos nem substituem as disposições do Termo de Comodato.</p>
+
+                        <p class="data-documento">Belo Horizonte, <span id="dataContratoGuia">_________</span> de <span
+                                id="mesContratoGuia">_________</span> de <span id="anoContratoGuia">_________</span>.
                         </p>
-
-
-                        <p>
-                            <strong>4.6</strong>
-                            Caso o(s) equipamento(s) seja(m) roubado(s) ou furtado(s),
-                            o COMODATÁRIO compromete-se a comunicar imediatamente à COMODANTE
-                            o ocorrido, ficando ainda responsável por levar o fato ao conhecimento
-                            da autoridade policial competente para que seja elaborado o respectivo
-                            boletim de ocorrência. Uma vez elaborado o boletim de ocorrência será
-                            de inteira responsabilidade do COMODATÁRIO entregar tal boletim à
-                            COMODANTE.
-                        </p>
-
-
-                        <p>
-                            <strong>4.7</strong>
-                            Em caso de furto(s) ou roubo(s), o COMODATÁRIO poderá arcará com
-                            os valores residuais de depreciação do referido equipamento, após a
-                            análise do ocorrido pela COMODANTE.
-                        </p>
-
-
-                        <h2>
-                            CLAUSULA QUINTA- DO PRAZO E DA RESCISÃO
-                        </h2>
-
-
-                        <p>
-                            <strong>5.1</strong>
-                            O presente Contrato vigorará durante todo o período do contrato
-                            de trabalho, podendo ser rescindido imediatamente e imotivadamente,
-                            pela COMODANTE, independentemente de qualquer aviso escrito.
-                        </p>
-
-
-                        <p>
-                            <strong>5.2</strong>
-                            O descumprimento do disposto nas cláusulas deste Contrato, também
-                            ensejará a rescisão deste instrumento.
-                        </p>
-
-
-                        <h2>
-                            CLÁUSULA SEXTA- DA DEVOLUÇÃO DO EQUIPAMENTO
-                        </h2>
-
-
-                        <p>
-                            <strong>6.1</strong>
-                            Com o término do Contrato de trabalho, o COMODATÁRIO compromete-se
-                            a devolver os equipamentos imediatamente, nas mesmas condições de
-                            conservação que o encontrou, respeitado o desgaste normal pelo uso
-                            regular.
-                        </p>
-
-
-                        <p>
-                            <strong>6.2</strong>
-                            Não obstante o disposto na cláusula anterior, sempre que solicitado
-                            pela COMODANTE, o COMODATÁRIO compromete-se a devolver o(s)
-                            equipamento(s) nas mesmas condições de conservação que o(s)
-                            encontrou à empresa, resguardado o desgaste normal pelo uso regular.
-                        </p>
-
-
-                        <h2>
-                            CLAUSULA SÉTIMA- DAS DISPOSIÇÕES FINAIS
-                        </h2>
-
-
-                        <p>
-                            <strong>7.1</strong>
-                            Para dirimir quaisquer dúvidas do presente contrato, as Partes
-                            elegem o foro da Comarca de Belo Horizonte, com expressa renúncia
-                            a qualquer outro, por mais privilegiado que seja.
-                        </p>
-
-
-                        <p>
-                            E por estarem assim justas a acertadas, assinam o presente
-                            Instrumento em duas vias de igual valor e teor.
-                        </p>
-
-
-                        <p class="data-documento">
-                            Belo Horizonte,
-                            <span id="dataContrato">
-                                __________
-                            </span>
-                            de
-                            <span id="mesContrato">
-                                ___________
-                            </span>
-                            de
-                            <span id="anoContrato">
-                                ___________
-                            </span>.
-                        </p>
-
-
                         <div class="assinaturas-documento">
-
                             <div class="assinatura-bloco">
-
                                 <div class="linha-assinatura"></div>
-
-                                <strong>
-                                    COMODANTE- GTM COMÉCIO E DISTRIBUIÇÃO LTDA
-                                </strong>
-
-                                <span>
-                                    CNPJ: 29.467.080/0001-71
-                                </span>
-
+                                <strong>COMODANTE — GTM COMÉRCIO E DISTRIBUIÇÃO LTDA</strong>
+                                <span>CNPJ: 29.467.080/0001-71</span>
                             </div>
+                            <div class="assinatura-bloco">
+                                <div class="assinatura-imagem-container"><img id="assinaturaGuia"
+                                        class="assinatura-imagem" alt="Assinatura do representante do comodatário">
+                                </div>
+                                <div class="linha-assinatura"></div>
+                                <strong>COMODATÁRIO — <span id="assinaturaNomeGuia">Nome do
+                                        representante</span></strong>
+                                <span>CPF: <span id="assinaturaCPFGuia">CPF</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-
+                <div class="document-page">
+                    <div class="document-content">
+                        <h1 class="document-title">DECLARAÇÃO DE CIÊNCIA</h1>
+                        <p>Declaro que recebi e li o presente Guia de Boas Práticas, compreendi as orientações nele
+                            contidas e estou ciente dos deveres de uso adequado, conservação, guarda, segurança,
+                            comunicação de ocorrências e devolução dos equipamentos e acessórios disponibilizados pela
+                            COMODANTE, conforme o Termo de Comodato firmado entre as partes.</p>
+                        <p class="data-documento">Belo Horizonte, <span id="dataDeclaracao">_________</span> de <span
+                                id="mesDeclaracao">_________</span> de <span id="anoDeclaracao">_________</span>.</p>
+                        <div class="assinaturas-documento">
+                            <div class="assinatura-bloco">
+                                <div class="linha-assinatura"></div><strong>COMODANTE — GTM COMÉRCIO E DISTRIBUIÇÃO
+                                    LTDA</strong><span>CNPJ: 29.467.080/0001-71</span>
+                            </div>
                             <div class="assinatura-bloco">
 
                                 <div class="assinatura-imagem-container">
-
-                                    <img id="assinaturaContrato" class="assinatura-imagem"
-                                        alt="Assinatura do colaborador">
-
+                                    <img id="assinaturaDeclaracao" class="assinatura-imagem"
+                                        alt="Assinatura do representante do comodatário">
                                 </div>
 
                                 <div class="linha-assinatura"></div>
 
                                 <strong>
-                                    COMODATÁRIO-
-                                    <span id="assinaturaNomeContrato">
-                                        Nome do Colaborador
-                                    </span>
+                                    COMODATÁRIO —
+                                    <span id="assinaturaNomeDeclaracao">Nome do representante</span>
                                 </strong>
 
                                 <span>
-                                    CPF
-                                    <span id="assinaturaCPFContrato">
-                                        000.000.000-00
-                                    </span>
+                                    CPF:
+                                    <span id="assinaturaCPFDeclaracao">CPF</span>
                                 </span>
 
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
-
-
-                <div class="document-page">
-
-                    <div class="document-content">
-
-                        <h1 class="document-title">
-                            GUIA DE MELHORES PRÁTICAS E POLÍTICAS PARA NOTEBOOKS E CELULARES
-                        </h1>
-
-
-                        <p>
-                            Ao colaborador
-                            <span class="dado-usuario" id="guiaNome">
-                                Nome do Colaborador
-                            </span>
-                        </p>
-
-
-                        <p>
-                            <strong>Caro Usuário,</strong>
-                        </p>
-
-
-                        <p>
-                            Leia cuidadosamente este Guia. Ele foi escrito para garantir que
-                            seus equipamentos tenham maior durabilidade e mantenham as
-                            configurações padrões da GTM COMÉRCIO E DISTRIBUIÇÃO LTDA,
-                            assim como o bom funcionamento de seus recursos.
-                        </p>
-
-
-                        <h2>
-                            1.COMPUTADOR E CELULAR:
-                        </h2>
-
-
-                        <p>
-                            <strong>1.1</strong>
-                            Todos os equipamentos e os softwares instalados são de propriedade
-                            da GTM- COMODANTE.
-                        </p>
-
-
-                        <p>
-                            <strong>1.2</strong>
-                            Os equipamentos contêm componentes eletrônicos sensíveis e por isso
-                            devem ser operados e armazenados com muito cuidado todo o tempo
-                            (Ex.: sempre transportar o notebook em bolsas próprias e acolchoadas,
-                            evitar quedas, batidas e riscos, não usar em ambiente com muita poeira,
-                            evitar humidade, não deixar em locais quentes ou exposto ao sol, etc).
-                        </p>
-
-
-                        <p>
-                            <strong>1.3</strong>
-                            O usuário é responsável pelo seu equipamento e todos os seus
-                            acessórios. O mesmo deve ser devolvido a empresa nas mesmas
-                            condições que foi recebido, respeitado o desgaste natural pelo uso.
-                        </p>
-
-
-                        <p>
-                            <strong>1.4</strong>
-                            Os equipamentos devem ser usados somente para atividades
-                            relacionadas ao trabalho.
-                        </p>
-
-
-                        <p>
-                            <strong>1.5</strong>
-                            Em casos de perdas ou roubos do equipamento, avise a COMODANTE
-                            munido da cópia do Boletim de Ocorrência para que sejam tomadas
-                            as providências legais e de segurança.
-                        </p>
-
-
-                        <h2>
-                            2. Padrões de Software
-                        </h2>
-
-
-                        <p>
-                            <strong>2.1</strong>
-                            Todo notebook terá uma cópia local dos softwares padrões da GTM,
-                            como, Microsoft Office, Outlook, entre outros. Quaisquer outras
-                            aplicações devem ser somente instaladas após autorização da empresa.
-                            Caso esta regra não seja seguida, pode acarretar graves sanções
-                            legais (tanto para a empresa quanto para o funcionário) e problemas
-                            técnico-operacionais.
-                        </p>
-
-
-                        <p>
-                            <strong>2.2</strong>
-                            A desinstalação de aplicações padrões e mudanças de configurações
-                            também não devem ser feitas em hipótese alguma.
-                        </p>
-
-
-                        <p>
-                            <strong>2.3</strong>
-                            Quando estiver fora da empresa, tenha cuidado ao conectar o celular
-                            ou o notebook a uma rede estranha. Tenha em mente que os dados dos
-                            equipamentos devem estar sempre em sigilo e uma rede estranha pode
-                            colocá-los em risco.
-                        </p>
-
-
-                        <h2>
-                            3. Backups e cópias de segurança.
-                        </h2>
-
-
-                        <p>
-                            <strong>3.1</strong>
-                            Faça sempre o upload de arquivos importantes para a Rede na nuvem
-                            da Microsoft ou de outro sistema que venha a ser contratado pela
-                            GTM- COMODANTE.
-                        </p>
-
-
-                        <h2>
-                            4. Manutenção
-                        </h2>
-
-
-                        <p>
-                            <strong>4.1</strong>
-                            Caso necessário, avise a COMODANTE da necessidade de manutenção
-                            para que seja providenciado o reparo.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="document-page">
-
-                    <div class="document-content">
-
-                        <h2>
-                            5. MELHORES PRÁTICAS PARA SEGURANÇA DOS NOTEBOOKS E CELULARES
-                        </h2>
-
-
-                        <p>
-                            • Não existe lugar seguro. Nunca assume que o notebook ou o celular
-                            estão seguros. Muitos notebooks são furtados em locais a menos de
-                            30 metros do proprietário.
-                        </p>
-
-
-                        <p>
-                            • SEMPRE guarde o notebook no porta-malas, independente da distância,
-                            duração ou trajeto da viagem. Preferencialmente evite guardar o
-                            notebook no porta-malas quando estiver em lugares públicos (como
-                            estacionamento de supermercados, na rua, etc.). Guarde antes de
-                            chegar ao local que irá estacionar para não gerar risco. Ao sair do
-                            carro, leve sempre o celular ou deixe-o em um lugar seguro e longe
-                            dos olhares de curiosos.
-                        </p>
-
-
-                        <p>
-                            • NUNCA deixe o notebook ou o celular dentro do carro por períodos
-                            muito longos quando estiver muito sol (altas temperatura podem
-                            danificar os aparelhos).
-                        </p>
-
-
-                        <p>
-                            • Faça com que a segurança seja parte da sua vida...
-                        </p>
-
-
-                        <p>
-                            Pessoas são os elos mais fracos da cadeia de segurança. Se você se
-                            preocupa com o seu bem-estar e com os seus pertences, irá minimizar
-                            os riscos de acontecer algum incidente, mantendo o ambiente mais
-                            seguro a sua volta.
-                        </p>
-
-
-                        <p class="data-documento">
-                            Belo Horizonte,
-                            <span id="dataContratoGuia">
-                                _________
-                            </span>
-                            de
-                            <span id="mesContratoGuia">
-                                _________
-                            </span>
-                            de
-                            <span id="anoContratoGuia">
-                                _________
-                            </span>.
-                        </p>
-
-
-                        <div class="assinaturas-documento">
-
-                            <div class="assinatura-bloco">
-
-                                <div class="linha-assinatura"></div>
-
-                                <strong>
-                                    COMODANTE- GTM COMÉCIO E DISTRIBUIÇÃO LTDA
-                                </strong>
-
-                                <span>
-                                    CNPJ: 29.467.080/0001-71
-                                </span>
-
-                            </div>
-
-
-                            <div class="assinatura-bloco">
-
-                                <div class="assinatura-imagem-container">
-
-                                    <img id="assinaturaGuia" class="assinatura-imagem" alt="Assinatura do colaborador">
-
-                                </div>
-
-                                <div class="linha-assinatura"></div>
-
-                                <strong>
-                                    COMODATÁRIO-
-                                    <span id="assinaturaNomeGuia">
-                                        Nome do Colaborador
-                                    </span>
-                                </strong>
-
-                                <span>
-                                    CPF
-                                    <span id="assinaturaCPFGuia">
-                                        000.000.000-00
-                                    </span>
-                                </span>
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
             </div>
-
         </section>
 
-
-
         <section class="documento-identificacao">
-
             <h3>Identificação do documento</h3>
-
-            <p class="descricao">
-                Informe os dados do documento utilizado para a assinatura
-                e envie uma foto legível.
-            </p>
-
+            <p class="descricao">Informe os dados do documento utilizado para a assinatura e envie uma foto legível.</p>
             <div class="documento-identificacao-grid">
-
                 <div class="documento-campo">
-                    <label for="tipoDocumento">
-                        Tipo de documento
-                    </label>
-
+                    <label for="tipoDocumento">Tipo de documento</label>
                     <select id="tipoDocumento">
                         <option value="">Selecione</option>
                         <option value="RG">RG</option>
@@ -711,151 +425,59 @@
                         <option value="Outro">Outro</option>
                     </select>
                 </div>
-
-                <div class="documento-campo">
-                    <label for="nomeDocumento">
-                        Número do documento
-                    </label>
-
-                    <input type="text" id="nomeDocumento" placeholder="Digite o número do documento">
-                </div>
-
+                <div class="documento-campo"><label for="nomeDocumento">Número do documento</label><input type="text"
+                        id="nomeDocumento" placeholder="Digite o número do documento"></div>
             </div>
-
             <div class="documento-upload">
-
-                <div class="documento-upload-titulo">
-                    Foto da frente
-                    <span class="documento-upload-obrigatorio">*</span>
+                <div class="documento-upload-titulo">Foto da frente <span class="documento-upload-obrigatorio">*</span>
                 </div>
-
-                <label for="fotoDocumentoFrente">
-                    Clique para selecionar a foto da frente
-                </label>
-
+                <label for="fotoDocumentoFrente">Clique para selecionar a foto da frente</label>
                 <input type="file" id="fotoDocumentoFrente" accept="image/*" capture="environment">
-
                 <div id="previewDocumentoFrenteContainer" class="documento-preview-container hidden">
-                    <div class="documento-preview">
-                        <img id="previewDocumentoFrente" alt="Pré-visualização da frente do documento">
-                    </div>
-
-                    <div class="documento-status">
-                        Documento carregado
-                    </div>
+                    <div class="documento-preview"><img id="previewDocumentoFrente"
+                            alt="Pré-visualização da frente do documento"></div>
+                    <div class="documento-status">Documento carregado</div>
                 </div>
-
             </div>
-
             <div class="documento-upload">
-
-                <div class="documento-upload-titulo">
-                    Foto do verso
-                    <span class="documento-upload-opcional">
-                        (opcional)
-                    </span>
-                </div>
-
-                <label for="fotoDocumentoVerso">
-                    Clique para selecionar a foto do verso
-                </label>
-
+                <div class="documento-upload-titulo">Foto do verso <span
+                        class="documento-upload-opcional">(opcional)</span></div>
+                <label for="fotoDocumentoVerso">Clique para selecionar a foto do verso</label>
                 <input type="file" id="fotoDocumentoVerso" accept="image/*" capture="environment">
-
                 <div id="previewDocumentoVersoContainer" class="documento-preview-container hidden">
-                    <div class="documento-preview">
-                        <img id="previewDocumentoVerso" alt="Pré-visualização do verso do documento">
-                    </div>
-
-                    <div class="documento-status">
-                        Documento carregado
-                    </div>
+                    <div class="documento-preview"><img id="previewDocumentoVerso"
+                            alt="Pré-visualização do verso do documento"></div>
+                    <div class="documento-status">Documento carregado</div>
                 </div>
-
             </div>
-
-            <div class="documento-observacao">
-                A imagem deve estar legível e mostrar claramente os dados
-                do documento. A foto da frente é obrigatória.
-            </div>
-
+            <div class="documento-observacao">A imagem deve estar legível e mostrar claramente os dados do documento. A
+                foto da frente é obrigatória.</div>
         </section>
-
 
         <section class="assinatura-area">
-
             <div class="assinatura-header">
-
                 <div>
-
-                    <h2>
-                        Assinatura eletrônica
-                    </h2>
-
-                    <p>
-                        Desenhe sua assinatura no campo abaixo.
-                    </p>
-
+                    <h2>Assinatura eletrônica</h2>
+                    <p>Desenhe sua assinatura no campo abaixo.</p>
                 </div>
-
             </div>
-
-
-            <div class="assinatura-canvas-wrapper">
-
-                <canvas id="canvasAssinatura" width="900" height="260"></canvas>
-
+            <div class="assinatura-canvas-wrapper"><canvas id="canvasAssinatura" width="900" height="260"></canvas>
             </div>
-
-
-            <div class="assinatura-actions">
-
-                <button type="button" class="btn-secondary" id="btnLimparAssinatura">
-                    Limpar assinatura
-                </button>
-
-
-                <button type="button" class="btn-primary" id="btnAssinar">
-                    Assinar termo
-                </button>
-
+            <div class="assinatura-actions"><button type="button" class="btn-secondary" id="btnLimparAssinatura">Limpar
+                    assinatura</button><button type="button" class="btn-primary" id="btnAssinar">Assinar termo</button>
             </div>
-
         </section>
-
 
         <section id="areaTermoAssinado" class="area-termo-assinado hidden">
-
-            <div>
-
-                <strong>
-                    Termo assinado com sucesso.
-                </strong>
-
-                <span id="dataHoraAssinatura">
-                </span>
-
-            </div>
-
-
-            <button type="button" class="btn-primary" id="btnBaixarPDF">
-                Baixar termo em PDF
-            </button>
-
+            <div><strong>Termo assinado com sucesso.</strong><span id="dataHoraAssinatura"></span></div>
+            <button type="button" class="btn-primary" id="btnBaixarPDF">Baixar termo em PDF</button>
         </section>
-
-
         <div id="toast" class="toast"></div>
-
     </main>
 
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
     <script src="js/termo.js"></script>
-
 </body>
 
 </html>

@@ -6,6 +6,8 @@ let equipamentos = [];
 let assinaturaDataURL = "";
 let termoJaAssinado = false;
 let termoAtual = null;
+let tipoTermoAtual = "CPF";
+let documentoInformado = "";
 
 let canvas = null;
 let ctx = null;
@@ -84,11 +86,19 @@ async function carregarDados() {
             ? dadosSessao.equipamentos
             : [];
 
+        tipoTermoAtual =
+            dadosSessao.tipoTermo === "CNPJ" ? "CNPJ" : "CPF";
+
+        documentoInformado =
+            dadosSessao.documentoInformado ||
+            colaborador.cpf ||
+            "";
+
         preencherDocumento();
 
         try {
             const resposta = await fetch(
-                `${API_URL}/termos/por-colaborador/${colaborador.id}`,
+                `${API_URL}/termos/por-colaborador/${colaborador.id}?tipoTermo=${encodeURIComponent(tipoTermoAtual)}`,
                 {
                     method: "GET",
                     credentials: "include"
@@ -178,8 +188,14 @@ function preencherDocumento() {
         colaborador.nome ||
         "";
 
+    const documento =
+        tipoTermoAtual === "CNPJ"
+            ? documentoInformado
+            : colaborador.cpf;
+
     definirTexto("docNome", nomeTermo);
-    definirTexto("docCPF", colaborador.cpf);
+    definirTexto("docCPF", documento);
+
     definirTexto("docCEP", colaborador.cep);
     definirTexto("docRua", colaborador.rua);
     definirTexto("docNumero", colaborador.numero);
@@ -190,25 +206,27 @@ function preencherDocumento() {
 
     definirTexto("guiaNome", nomeTermo);
 
-    definirTexto(
-        "assinaturaNomeContrato",
-        nomeTermo
-    );
+    definirTexto("assinaturaNomeContrato", nomeTermo);
+    definirTexto("assinaturaNomeGuia", nomeTermo);
+    definirTexto("assinaturaNomeDeclaracao", nomeTermo);
 
-    definirTexto(
-        "assinaturaCPFContrato",
-        colaborador.cpf
-    );
 
-    definirTexto(
-        "assinaturaNomeGuia",
-        nomeTermo
-    );
+    const agora = new Date();
 
-    definirTexto(
-        "assinaturaCPFGuia",
-        colaborador.cpf
-    );
+    const meses = [
+        "janeiro", "fevereiro", "março", "abril",
+        "maio", "junho", "julho", "agosto",
+        "setembro", "outubro", "novembro", "dezembro"
+    ];
+
+    definirTexto("dataDeclaracao", String(agora.getDate()).padStart(2, "0"));
+    definirTexto("mesDeclaracao", meses[agora.getMonth()]);
+    definirTexto("anoDeclaracao", agora.getFullYear());
+
+
+    definirTexto("assinaturaCPFContrato", documento);
+    definirTexto("assinaturaCPFGuia", documento);
+    definirTexto("assinaturaCPFDeclaracao", documento);
 
     renderizarEquipamentosDocumento();
 }
@@ -537,6 +555,7 @@ function limparImagemAssinatura() {
     });
 }
 
+
 function aplicarAssinatura(dataURL) {
     if (!dataURL) {
         return;
@@ -545,12 +564,9 @@ function aplicarAssinatura(dataURL) {
     assinaturaDataURL = dataURL;
 
     const imagens = [
-        document.getElementById(
-            "assinaturaContrato"
-        ),
-        document.getElementById(
-            "assinaturaGuia"
-        )
+        document.getElementById("assinaturaContrato"),
+        document.getElementById("assinaturaGuia"),
+        document.getElementById("assinaturaDeclaracao")
     ];
 
     imagens.forEach(imagem => {
@@ -560,11 +576,10 @@ function aplicarAssinatura(dataURL) {
 
         imagem.src = dataURL;
 
-        imagem.classList.add(
-            "visivel"
-        );
+        imagem.classList.add("visivel");
     });
 }
+
 
 function configurarBotoes() {
     const btnLimpar =
@@ -974,6 +989,7 @@ async function assinarTermo() {
                     },
                     body: JSON.stringify({
                         colaboradorId: colaborador.id,
+                        tipoTermo: tipoTermoAtual,
                         status: "Pendente",
                         documentoHTML: documentoHTML,
                         equipamentos: equipamentos.map(equipamento => ({
@@ -1118,11 +1134,11 @@ async function assinarTermo() {
         sessionStorage.setItem(
             "colaboradorTermo",
             JSON.stringify({
-                colaborador:
-                    colaborador,
-
-                equipamentos:
-                    equipamentos
+                ...dadosSessao,
+                colaborador: colaborador,
+                equipamentos: equipamentos,
+                tipoTermo: tipoTermoAtual,
+                documentoInformado: documentoInformado
             })
         );
 
