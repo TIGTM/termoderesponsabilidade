@@ -113,6 +113,21 @@ A migration `AddContaColaborador` cria uma conta por CPF e por colaborador, com 
 
 A associação ignora acentos, caixa e partículas (de, da, dos), exige o mesmo primeiro nome e os sobrenomes cadastrados na mesma ordem e permite nomes intermediários. Exemplo: João Silva corresponde a João Carlos da Silva. Não corrige erros de digitação nem escolhe entre homônimos. Quando há ambiguidade, divergência de CPF ou cadastro já associado, o usuário recebe orientação para procurar o TI.
 
-Limite do fluxo solicitado: nome e CPF informados não comprovam a identidade de quem realiza o primeiro cadastro. O fluxo não inclui confirmação por e-mail, código ou aprovação externa. Recuperação de senha ainda não é oferecida.
+## Validação por e-mail e assinatura
+
+Antes de assinar, o colaborador informa um e-mail pessoal e valida sua posse com um código de seis dígitos, válido por cinco minutos. Para cada assinatura é gerado um novo código, de uso único, vinculado ao colaborador, ao termo e ao conteúdo do documento. O código é armazenado somente como hash, expira após cinco tentativas inválidas e não pode ser reutilizado.
+
+O envio usa o Microsoft Graph com uma caixa de correio institucional. Registre uma aplicação no Microsoft Entra ID, conceda e aprove a permissão de aplicativo **Microsoft Graph / Mail.Send**, restrinja a aplicação à caixa indicada quando a política da organização permitir, e preencha no ambiente da API:
+
+```env
+MICROSOFTGRAPH__TENANTID=<id-do-locatario>
+MICROSOFTGRAPH__CLIENTID=<id-da-aplicacao>
+MICROSOFTGRAPH__CLIENTSECRET=<segredo-da-aplicacao>
+MICROSOFTGRAPH__SENDER=termos-ti@suaempresa.com
+```
+
+No Docker Compose, copie esses valores para `.env`; o serviço `api` já os recebe. A migration `AddEmailAuthorization` é aplicada na inicialização da API. Sem essa configuração, o sistema informa que o envio ainda não foi configurado e não libera a assinatura.
+
+Nome e CPF por si só ainda não comprovam a identidade antes do primeiro cadastro. Recuperação de senha ainda não é oferecida.
 
 Validação local: `dotnet run --project tests/TermoTI.AuthChecks --configuration Release` verifica CPF, nomes, hash, restrições únicas e rejeições de entrada da API sem acessar o banco. `node tests/login-colaborador.test.cjs` verifica os estados do login com respostas simuladas. Esses testes não substituem a validação integrada com SQL Server.
