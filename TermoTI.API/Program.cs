@@ -9,6 +9,9 @@ using TermoTI.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpClient();
+builder.Services.AddMemoryCache();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendLocal", policy =>

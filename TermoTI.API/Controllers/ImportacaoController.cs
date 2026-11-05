@@ -1,9 +1,12 @@
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using TermoTI.API.Services;
 
 namespace TermoTI.API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/admin/[controller]")]
 public class ImportacaoController : ControllerBase
 {
@@ -49,20 +52,28 @@ public class ImportacaoController : ControllerBase
         {
             await using (var stream = new FileStream(
                 caminhoTemporario,
-                FileMode.Create))
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None))
             {
                 await arquivo.CopyToAsync(stream);
-            }   
+            }
 
-            var quantidade =
-                await _excelImportService
-                    .ImportarExcelAsync(caminhoTemporario);
+            var quantidade = await _excelImportService
+                .ImportarExcelAsync(caminhoTemporario);
 
             return Ok(new
             {
-                mensagem = "Excel importado com sucesso.",
+                mensagem = "Sincronização concluída com sucesso.",
                 arquivo = arquivo.FileName,
                 registros = quantidade
+            });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new
+            {
+                mensagem = ex.Message
             });
         }
         finally

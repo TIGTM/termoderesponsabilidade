@@ -9,6 +9,34 @@ let termoAtual = null;
 let tipoTermoAtual = "CPF";
 let documentoInformado = "";
 
+let razaoSocialCNPJ = "";
+let consultaCNPJConcluida = false;
+
+async function consultarRazaoSocialCNPJ(cnpj) {
+    const numero = String(cnpj || "").replace(/\D/g, "");
+
+    if (numero.length !== 14) {
+        throw new Error("CNPJ inválido.");
+    }
+
+    const resposta = await fetch(
+        `${API_URL}/cnpj/${numero}`
+    );
+
+    if (!resposta.ok) {
+        throw new Error("Não foi possível consultar o CNPJ.");
+    }
+
+    const dados = await resposta.json();
+    const razaoSocial = dados.razao_social?.trim();
+
+    if (!razaoSocial) {
+        throw new Error("Razão social não encontrada.");
+    }
+
+    return razaoSocial;
+}
+
 let canvas = null;
 let ctx = null;
 let desenhando = false;
@@ -95,6 +123,37 @@ async function carregarDados() {
             "";
 
         preencherDocumento();
+
+        if (tipoTermoAtual === "CNPJ") {
+            const numeroCNPJ = String(documentoInformado || "")
+                .replace(/\D/g, "");
+
+            if (numeroCNPJ.length === 14) {
+                try {
+                    mostrarToast("Consultando razão social...", "info");
+
+                    razaoSocialCNPJ = await consultarRazaoSocialCNPJ(numeroCNPJ);
+
+                    consultaCNPJConcluida = true;
+
+                    definirTexto("docRazaoSocial", razaoSocialCNPJ);
+
+                    mostrarToast(
+                        "Razão social encontrada com sucesso.",
+                        "sucesso"
+                    );
+                } catch (erro) {
+                    console.error("Erro ao consultar CNPJ:", erro);
+
+                    consultaCNPJConcluida = false;
+
+                    mostrarToast(erro.message, "erro");
+                }
+            } else {
+                consultaCNPJConcluida = false;
+                mostrarToast("CNPJ inválido.", "erro");
+            }
+        }
 
         try {
             const resposta = await fetch(
@@ -898,6 +957,14 @@ function bloquearDocumento() {
 
 async function assinarTermo() {
     if (termoJaAssinado) {
+        return;
+    }
+
+    if (tipoTermoAtual === "CNPJ" && !consultaCNPJConcluida) {
+        mostrarToast(
+            "Não foi possível confirmar a razão social. Verifique o CNPJ antes de assinar.",
+            "erro"
+        );
         return;
     }
 
