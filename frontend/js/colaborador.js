@@ -6,15 +6,18 @@ let colaboradorSelecionado = null;
 let equipamentosSelecionados = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
-    await carregarColaboradores();
-
-    configurarBusca();
+    await carregarSessaoColaborador();
     configurarMascaras();
 
-    document.getElementById("btnLoginColaborador")?.addEventListener(
-        "click",
-        autenticarColaborador
-    );
+    document.getElementById("tentarNovamente")?.addEventListener("click", carregarSessaoColaborador);
+    document.getElementById("sairColaborador")?.addEventListener("click", async () => {
+        try {
+            const resposta = await fetch(`${API_URL}/colaborador-auth/logout`, { method: "POST", credentials: "include" });
+            if (!resposta.ok && resposta.status !== 401) throw new Error();
+            sessionStorage.removeItem("colaboradorTermo");
+            window.location.href = "login.html?perfil=colaborador";
+        } catch { mostrarToast("Não foi possível sair. Tente novamente.", "erro"); }
+    });
 
     document.getElementById("btnContinuar")?.addEventListener(
         "click",
@@ -32,98 +35,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
 });
 
-
-async function carregarColaboradores() {
-    try {
-        const resposta = await fetch(`${API_URL}/colaboradores`);
-
-        if (!resposta.ok) {
-            throw new Error("Não foi possível carregar os colaboradores.");
-        }
-
-        colaboradores = await resposta.json();
-    } catch (erro) {
-        console.error("Erro ao carregar colaboradores:", erro);
-        mostrarToast("Não foi possível carregar os colaboradores.", "erro");
-    }
-}
-
-function renderizarColaboradores(lista = colaboradores) {
-    const listaElement = document.getElementById("resultadosColaboradores");
-
-    if (!listaElement) return;
-
-    listaElement.innerHTML = "";
-
-    if (!lista.length) {
-        listaElement.classList.remove("show");
-        return;
-    }
-
-    lista.forEach(colaborador => {
-        const item = document.createElement("div");
-        item.className = "autocomplete-item";
-        item.dataset.id = colaborador.id;
-
-        const nome = colaborador.nomeCompleto || colaborador.nome || "Sem nome";
-        const email =
-            colaborador.email ??
-            colaborador.Email ??
-            colaborador.emailCorporativo ??
-            colaborador.EmailCorporativo ??
-            colaborador.emailInstitucional ??
-            colaborador.EmailInstitucional ??
-            "";
-
-        item.innerHTML = `
-            <div class="autocomplete-avatar">
-                ${escapeHTML(obterInicial(nome))}
-            </div>
-            <div class="autocomplete-info">
-                <strong>${escapeHTML(nome)}</strong>
-                <span>${escapeHTML(email || "Sem e-mail")}</span>
-            </div>
-        `;
-
-        item.addEventListener("click", () => selecionarColaborador(colaborador));
-        listaElement.appendChild(item);
-    });
-
-    listaElement.classList.add("show");
-}
-
-function selecionarColaborador(colaborador) {
-    colaboradorSelecionado = colaborador;
-    equipamentosSelecionados = [];
-
-    const campoBusca = document.getElementById("campoBuscaColaborador");
-
-    if (campoBusca) {
-        campoBusca.value =
-            colaborador.nomeCompleto || colaborador.nome || "";
-    }
-
-    document.getElementById("resultadosColaboradores")
-        ?.classList.remove("show");
-
-    document.getElementById("areaLoginColaborador")
-        ?.classList.remove("hidden");
-
-    document.getElementById("areaColaborador")
-        ?.classList.add("hidden");
-
-    document.getElementById("estadoVazio")
-        ?.classList.add("hidden");
-
-    const senha = document.getElementById("senhaColaborador");
-    if (senha) {
-        senha.value = "";
-        senha.focus();
-    }
-
-    const mensagem = document.getElementById("mensagemLoginColaborador");
-    if (mensagem) mensagem.textContent = "";
-}
 
 function preencherFormulario(colaborador) {
     const campos = {
@@ -145,117 +56,33 @@ function preencherFormulario(colaborador) {
 }
 
 
-async function autenticarColaborador() {
-    if (!colaboradorSelecionado) {
-        mostrarToast("Selecione seu nome primeiro.", "erro");
-        return false;
-    }
-
-    const senhaInput = document.getElementById("senhaColaborador");
-    const mensagem = document.getElementById("mensagemLoginColaborador");
-    const botao = document.getElementById("btnLoginColaborador");
-
-    const senha = senhaInput?.value || "";
-
-    if (!senha.trim()) {
-        if (mensagem) mensagem.textContent = "Informe a senha de acesso.";
-        return false;
-    }
-
-    if (mensagem) mensagem.textContent = "";
-    if (botao) botao.disabled = true;
-
+async function carregarSessaoColaborador() {
+    const erro = document.getElementById("erroCarregamento");
+    const retry = document.getElementById("tentarNovamente");
+    erro.textContent = "";
+    retry.classList.add("hidden");
     try {
-        const resposta = await fetch(`${API_URL}/colaborador-auth/login`, {
-            method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                colaboradorId: Number(colaboradorSelecionado.id),
-                senha
-            })
-        });
-
-        const dados = await resposta.json().catch(() => ({}));
-
-        if (!resposta.ok) {
-            throw new Error(
-                dados.mensagem || "Não foi possível autenticar."
-            );
+        const resposta = await fetch(`${API_URL}/colaborador-auth/me`, { credentials: "include", cache: "no-store" });
+        if (resposta.status === 401) {
+            sessionStorage.removeItem("colaboradorTermo");
+            window.location.replace("login.html?perfil=colaborador");
+            return;
         }
-
-        const sessao = await fetch(`${API_URL}/colaborador-auth/me`, {
-            method: "GET",
-            credentials: "include"
-        });
-
-        if (!sessao.ok) {
-            throw new Error("A sessão não foi confirmada pela API.");
-        }
-
-        const dadosSessao = await sessao.json();
-
-        if (
-            Number(dadosSessao.colaboradorId) !==
-            Number(colaboradorSelecionado.id)
-        ) {
-            throw new Error(
-                "A sessão não corresponde ao colaborador selecionado."
-            );
-        }
-
-        if (mensagem) mensagem.textContent = "Acesso autorizado.";
-        if (senhaInput) senhaInput.value = "";
-
-        document.getElementById("areaLoginColaborador")
-            ?.classList.add("hidden");
-
-        document.getElementById("areaColaborador")
-            ?.classList.remove("hidden");
-
-        document.getElementById("estadoVazio")
-            ?.classList.add("hidden");
-
+        if (!resposta.ok) throw new Error("Não foi possível carregar seu cadastro.");
+        const sessao = await resposta.json();
+        colaboradorSelecionado = sessao.colaborador;
         preencherFormulario(colaboradorSelecionado);
-
-        equipamentosSelecionados =
-            await obterEquipamentosDoColaborador(colaboradorSelecionado);
-
+        equipamentosSelecionados = await obterEquipamentosDoColaborador(colaboradorSelecionado);
         renderizarEquipamentos(equipamentosSelecionados);
-
-        const possuiTermo = await possuiTermoAssinado(
-            colaboradorSelecionado.id
-        );
-
-        if (possuiTermo) {
-            bloquearDadosAssinados();
-        } else {
-            desbloquearDados();
-        }
-
-        return true;
-    } catch (erro) {
-        console.error("Erro na autenticação:", erro);
-
-        if (mensagem) {
-            mensagem.textContent =
-                erro.message || "Não foi possível autenticar o colaborador.";
-        }
-
-        mostrarToast(
-            erro.message || "Não foi possível autenticar o colaborador.",
-            "erro"
-        );
-
-        return false;
-    } finally {
-        if (botao) botao.disabled = false;
+        if (await possuiTermoAssinado(colaboradorSelecionado.id)) bloquearDadosAssinados();
+        else desbloquearDados();
+        document.getElementById("areaColaborador").classList.remove("hidden");
+        document.getElementById("estadoVazio").classList.add("hidden");
+    } catch (falha) {
+        erro.textContent = falha.message || "Não foi possível carregar. Tente novamente.";
+        retry.classList.remove("hidden");
     }
 }
-
-
 
 async function obterEquipamentosDoColaborador(colaborador) {
     const resposta = await fetch(`${API_URL}/equipamentos`, {
@@ -1095,34 +922,6 @@ async function baixarTermoAssinado() {
     }
 }
 
-
-function configurarBusca() {
-    const campo = document.getElementById("campoBuscaColaborador");
-    if (!campo) return;
-
-    campo.addEventListener("input", () => {
-        const busca = normalizarTexto(campo.value);
-        const resultados = document.getElementById("resultadosColaboradores");
-
-        if (!busca) {
-            if (resultados) {
-                resultados.innerHTML = "";
-                resultados.classList.remove("show");
-            }
-            return;
-        }
-
-        const filtrados = colaboradores.filter(colaborador =>
-            normalizarTexto(
-                colaborador.nomeCompleto || colaborador.nome
-            ).includes(busca) ||
-            normalizarTexto(colaborador.email).includes(busca) ||
-            normalizarTexto(colaborador.cpf).includes(busca)
-        );
-
-        renderizarColaboradores(filtrados);
-    });
-}
 
 function configurarMascaras() {
 

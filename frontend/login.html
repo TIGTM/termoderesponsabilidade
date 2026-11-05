@@ -25,6 +25,33 @@
                 Acesso administrativo ao sistema de termos de responsabilidade
             </p>
 
+            <form id="acessoColaborador" class="hidden" novalidate>
+                <div class="login-field">
+                    <label for="nomeCompleto">Nome completo</label>
+                    <input id="nomeCompleto" autocomplete="name" maxlength="200" aria-describedby="mensagemColaborador" required>
+                </div>
+                <div class="login-field">
+                    <label for="cpfLogin">CPF</label>
+                    <input id="cpfLogin" inputmode="numeric" maxlength="14" autocomplete="username" aria-describedby="mensagemColaborador" required>
+                </div>
+                <div id="etapaSenha" class="hidden">
+                    <p id="orientacaoSenha"></p>
+                    <div class="login-field">
+                        <label for="senhaPessoal">Senha</label>
+                        <input id="senhaPessoal" type="password" maxlength="128" autocomplete="current-password" aria-describedby="mensagemColaborador">
+                        <button type="button" id="mostrarSenha" class="btn-secondary" aria-pressed="false">Mostrar senha</button>
+                    </div>
+                    <div id="confirmacaoSenha" class="login-field hidden">
+                        <label for="confirmarSenha">Confirme a senha</label>
+                        <input id="confirmarSenha" type="password" autocomplete="new-password" maxlength="128" aria-describedby="mensagemColaborador">
+                    </div>
+                </div>
+                <button id="continuarLogin" type="submit" class="login-button">Continuar</button>
+                <p id="mensagemColaborador" role="status" aria-live="polite"></p>
+                <button id="alterarIdentificacao" type="button" class="btn-secondary hidden">Alterar nome ou CPF</button>
+            </form>
+            <p><a href="index.html">Voltar à escolha de acesso</a></p>
+
             <form id="loginForm">
 
                 <div class="login-field">
@@ -62,6 +89,7 @@
     </main>
 
     <script src="js/login.js"></script>
+    <script src="js/login-colaborador.js"></script>
 
 </body>
 </html>

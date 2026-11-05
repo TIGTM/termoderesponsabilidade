@@ -2175,3 +2175,16 @@ tbody tr:hover {
         width: 100%;
     }
 }
+/* Acesso individual: reutiliza os campos e botões do login administrativo. */
+#acessoColaborador #mensagemColaborador { min-height: 3em; margin: 12px 0; }
+#acessoColaborador #orientacaoSenha { margin: 12px 0; line-height: 1.5; }
+#acessoColaborador .btn-secondary { margin-top: 8px; }
+#acessoColaborador input[readonly] { background: #f1f5f9; }
+#acessoColaborador input[aria-invalid="true"] { border-color: var(--danger); }
+#acessoColaborador button:disabled { opacity: .65; cursor: wait; }
+#acessoColaborador :focus-visible { outline: 3px solid var(--primary); outline-offset: 3px; }
+#acessoColaborador { display: flex; flex-direction: column; gap: 16px; text-align: left; }
+#loginForm.hidden, #acessoColaborador.hidden { display: none; }
+@media (prefers-reduced-motion: reduce) {
+    .login-field input, .login-button { transition: none; }
+}

@@ -11,6 +11,7 @@ public class TermoTIDbContext : DbContext
     }
 
     public DbSet<Colaborador> Colaboradores { get; set; }
+    public DbSet<ContaColaborador> ContasColaboradores { get; set; }
 
     public DbSet<UsuarioAdmin> UsuariosAdmin { get; set; }
 
@@ -23,6 +24,12 @@ public class TermoTIDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<ContaColaborador>().Property(c => c.CPF).HasMaxLength(11);
+        modelBuilder.Entity<ContaColaborador>().HasIndex(c => c.CPF).IsUnique();
+        modelBuilder.Entity<ContaColaborador>().HasIndex(c => c.ColaboradorId).IsUnique();
+        modelBuilder.Entity<ContaColaborador>().HasOne<Colaborador>().WithOne()
+            .HasForeignKey<ContaColaborador>(c => c.ColaboradorId).OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Termo>()
             .HasOne<Colaborador>()

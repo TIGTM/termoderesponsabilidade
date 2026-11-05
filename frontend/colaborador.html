@@ -24,8 +24,8 @@
             </div>
         </div>
 
-        <button type="button" class="btn-secondary" onclick="window.location.href='index.html'">
-            Voltar
+        <button type="button" class="btn-secondary" id="sairColaborador">
+            Sair
         </button>
 
     </header>
@@ -41,54 +41,6 @@
                     para emissão do termo.
                 </p>
             </div>
-        </section>
-
-        <section class="panel">
-
-            <div class="panel-title">
-                <div>
-                    <h2>Identificação</h2>
-
-                    <p>
-                        Pesquise seu nome e informe a senha de acesso
-                        para continuar.
-                    </p>
-                </div>
-            </div>
-
-            <div class="search-wrapper">
-
-                <label for="campoBuscaColaborador">
-                    Nome do colaborador
-                </label>
-
-                <input type="text" id="campoBuscaColaborador" placeholder="Digite seu nome..." autocomplete="off">
-
-                <div id="resultadosColaboradores" class="autocomplete-results">
-                </div>
-
-            </div>
-
-            <div id="areaLoginColaborador" class="hidden">
-
-                <div class="form-group">
-                    <label for="senhaColaborador">
-                        <h3>Senha de acesso</h3>
-                    </label>
-
-                    <input type="password" id="senhaColaborador" placeholder="Digite a senha:"
-                        autocomplete="current-password">
-                </div>
-
-                <button type="button" id="btnLoginColaborador" class="btn-primary">
-                    Acessar cadastro
-                </button>
-
-                <p id="mensagemLoginColaborador" role="status" aria-live="polite">
-                </p>
-
-            </div>
-
         </section>
 
         <section id="areaColaborador" class="hidden">
@@ -230,17 +182,10 @@
 
         </section>
 
-        <section id="estadoVazio" class="empty-state">
-
-            <div class="empty-icon">👤</div>
-
-            <h2>Pesquise seu nome</h2>
-
-            <p>
-                Digite seu nome acima para localizar seu cadastro
-                e seus equipamentos.
-            </p>
-
+        <section id="estadoVazio" class="empty-state" aria-live="polite">
+            <h2>Carregando seu cadastro...</h2>
+            <p id="erroCarregamento"></p>
+            <button id="tentarNovamente" type="button" class="btn-secondary hidden">Tentar novamente</button>
         </section>
 
         <div id="toast" class="toast" role="status" aria-live="polite">

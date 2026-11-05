@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TermoTI.API.Data;
 using TermoTI.API.Models;
+using TermoTI.API.Services;
 
 namespace TermoTI.API.Controllers;
 
@@ -73,6 +74,11 @@ public class ColaboradoresController : ControllerBase
                 mensagem = "Colaborador não encontrado."
             });
         }
+
+        var conta = await _context.ContasColaboradores.AsNoTracking()
+            .SingleOrDefaultAsync(c => c.ColaboradorId == id);
+        if (conta != null && IdentidadeColaborador.Cpf(colaborador.CPF) != conta.CPF)
+            return BadRequest(new { mensagem = "O CPF deve corresponder ao CPF da sua conta." });
 
         colaboradorExistente.Nome = colaborador.Nome;
         colaboradorExistente.NomeCompleto = colaborador.NomeCompleto;
