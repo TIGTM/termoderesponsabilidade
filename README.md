@@ -42,6 +42,17 @@ A interface é publicada na porta 80. Configure HTTPS antes de disponibilizar o 
 
 ## Banco de dados e migrations
 
+### Desenvolvimento com Live Server
+
+Abra a pasta raiz `TermoTI` no VS Code para carregar `.vscode/settings.json`.
+Inicie a API com `dotnet run --project TermoTI.API --launch-profile http` e abra
+`frontend/index.html` com Live Server. A porta 5500 encaminha `/api` para
+`http://localhost:5268/api`, preservando as URLs relativas e os cookies.
+Após alterar as configurações do Live Server, pare e inicie novamente a extensão.
+Após alterar os controllers, reinicie a API para carregar as rotas e migrations novas.
+Um 404 em `/api/colaborador-auth/identificar` diretamente na porta 5268 indica
+que a API em execução ainda não contém essa rota; reiniciar apenas o frontend não resolve.
+
 As migrations do Entity Framework Core estão versionadas em `TermoTI.API/Migrations/`.
 
 Durante a inicialização, a API executa `Database.MigrateAsync()` para aplicar as migrations pendentes ao banco configurado na connection string `DefaultConnection`.

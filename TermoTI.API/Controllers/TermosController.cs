@@ -220,14 +220,15 @@ public class TermosController : ControllerBase
             });
         }
 
-        var quantidadeEquipamentosExistentes = await _context.Equipamentos
+        var quantidadeEquipamentosExistentes = await TermoTI.API.Services.EquipamentosDoColaborador
+            .DisponiveisParaTermo(_context.Equipamentos, colaboradorId)
             .CountAsync(e => idsEquipamentos.Contains(e.Id));
 
         if (quantidadeEquipamentosExistentes != idsEquipamentos.Count)
         {
             return BadRequest(new
             {
-                mensagem = "Um ou mais equipamentos informados não existem."
+                mensagem = "Um ou mais equipamentos não estão disponíveis para seu termo. Atualize a página e confira os equipamentos vinculados a você."
             });
         }
 

@@ -1,9 +1,11 @@
+
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TermoTI.API.Data;
 using TermoTI.API.Models;
+using TermoTI.API.Services;
 
 namespace TermoTI.API.Controllers;
 
@@ -12,6 +14,7 @@ namespace TermoTI.API.Controllers;
 public class EquipamentosController : ControllerBase
 {
     private const string ColaboradorScheme = "ColaboradorCookie";
+    private const string StatusHistorico = "Histórico";
 
     private readonly TermoTIDbContext _context;
 
@@ -34,9 +37,7 @@ public class EquipamentosController : ControllerBase
 
         var equipamentos = await _context.Equipamentos
             .AsNoTracking()
-            .Where(e =>
-                e.ResponsavelId == null ||
-                e.ResponsavelId == colaboradorId)
+            .DisponiveisParaTermo(colaboradorId)
             .Select(e => new
             {
                 id = e.Id,
@@ -60,9 +61,14 @@ public class EquipamentosController : ControllerBase
     public async Task<ActionResult<IEnumerable<Equipamento>>>
         GetEquipamentosAdmin()
     {
-        return await _context.Equipamentos
+        var equipamentos = await _context.Equipamentos
             .AsNoTracking()
+            .Where(e =>
+                e.ResponsavelId != null &&
+                e.Status != StatusHistorico)
             .ToListAsync();
+
+        return Ok(equipamentos);
     }
 
     [Authorize]
