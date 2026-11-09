@@ -14,6 +14,8 @@ void Check(bool condition, string description)
 }
 Check(IdentidadeColaborador.Cpf("529.982.247-25") == "52998224725", "CPF normalization");
 Check(IdentidadeColaborador.CpfValido("52998224725"), "Valid CPF");
+Check(IdentidadeColaborador.CnpjValido("11222333000181"), "Valid CNPJ");
+Check(IdentidadeColaborador.DocumentoValido("11.222.333/0001-81"), "Valid CPF or CNPJ document");
 foreach (var cpf in new[] { "", "11111111111", "52998224724", "123", "00000000000" })
     Check(!IdentidadeColaborador.CpfValido(cpf), "Reject invalid CPF");
 Check(IdentidadeColaborador.NomeCompativel("João Silva", "João Carlos da Silva"), "Middle names and accents");
@@ -30,11 +32,25 @@ Check(conta.SenhaHash != "senha-de-teste", "Never store plaintext");
 Check(hasher.VerifyHashedPassword(conta, conta.SenhaHash, "senha-de-teste") != PasswordVerificationResult.Failed, "Correct password");
 Check(hasher.VerifyHashedPassword(conta, conta.SenhaHash, "errada") == PasswordVerificationResult.Failed, "Incorrect password");
 Check(!System.Text.Json.JsonSerializer.Serialize(conta).Contains("SenhaHash"), "Do not serialize hash");
+Check(EmailAutorizacaoService.EmailValido("pessoa@exemplo.com"), "Accept valid authorization email");
+Check(!EmailAutorizacaoService.EmailValido("email-invalido"), "Reject invalid authorization email");
+Check(ColaboradorEmailController.NormalizarEmail(" Pessoa@Exemplo.COM ") == "pessoa@exemplo.com", "Normalize authorization email");
+Check(ColaboradorEmailController.MascararEmail("pessoa@exemplo.com") == "p***@exemplo.com", "Mask authorization email");
+var codigo = ColaboradorEmailController.GerarCodigo();
+Check(codigo.Length == 6 && codigo.All(char.IsAsciiDigit), "Generate six digit authorization code");
+var desafio = new CodigoAutorizacao();
+var codigoHasher = new PasswordHasher<CodigoAutorizacao>();
+desafio.CodigoHash = codigoHasher.HashPassword(desafio, codigo);
+Check(codigoHasher.VerifyHashedPassword(desafio, desafio.CodigoHash, codigo) != PasswordVerificationResult.Failed, "Verify correct authorization code");
+Check(codigoHasher.VerifyHashedPassword(desafio, desafio.CodigoHash, "000000") == PasswordVerificationResult.Failed, "Reject incorrect authorization code");
 using var db = new TermoTIDbContext(new DbContextOptionsBuilder<TermoTIDbContext>()
     .UseSqlServer("Server=localhost;Database=unused;Integrated Security=true;TrustServerCertificate=true").Options);
 var model = db.Model.FindEntityType(typeof(ContaColaborador))!;
 Check(model.GetIndexes().Any(i => i.IsUnique && i.Properties.Single().Name == "CPF"), "Unique CPF index");
 Check(model.GetIndexes().Any(i => i.IsUnique && i.Properties.Single().Name == "ColaboradorId"), "Unique employee index");
+var codigoModel = db.Model.FindEntityType(typeof(CodigoAutorizacao))!;
+Check(codigoModel.FindProperty(nameof(CodigoAutorizacao.Versao))!.IsConcurrencyToken, "Authorization code prevents concurrent reuse");
+Check(codigoModel.FindProperty(nameof(CodigoAutorizacao.ConfirmadoEm)) != null, "Authorization code records confirmation before signature");
 var controller = new ColaboradorAuthController(db);
 Check(await controller.Identificar(new() { NomeCompleto = "João Silva", CPF = "11111111111" }) is BadRequestObjectResult, "API rejects invalid CPF before querying");
 Check(await controller.Cadastrar(new() { NomeCompleto = "João Silva", CPF = "52998224725", Senha = "123" }) is BadRequestObjectResult, "API rejects short password");

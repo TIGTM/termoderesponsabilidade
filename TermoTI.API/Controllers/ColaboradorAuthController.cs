@@ -20,16 +20,16 @@ public class ColaboradorAuthController(TermoTIDbContext context) : ControllerBas
     private static bool IdentificacaoValida(IdentificacaoColaboradorDto dto) =>
         dto.NomeCompleto.Length <= 200 &&
         IdentidadeColaborador.PartesNome(dto.NomeCompleto).Length >= 2 &&
-        IdentidadeColaborador.CpfValido(IdentidadeColaborador.Cpf(dto.CPF));
+        IdentidadeColaborador.DocumentoValido(dto.CPF);
 
     [AllowAnonymous]
     [HttpPost("identificar")]
     public async Task<IActionResult> Identificar(IdentificacaoColaboradorDto dto)
     {
         if (!IdentificacaoValida(dto))
-            return BadRequest(new { mensagem = "Informe seu nome completo e um CPF válido." });
-        var cpf = IdentidadeColaborador.Cpf(dto.CPF);
-        return Ok(new { cadastrado = await context.ContasColaboradores.AnyAsync(c => c.CPF == cpf) });
+            return BadRequest(new { mensagem = "Informe seu nome completo e um CPF ou CNPJ válido." });
+        var documento = IdentidadeColaborador.Cpf(dto.CPF);
+        return Ok(new { cadastrado = await context.ContasColaboradores.AnyAsync(c => c.CPF == documento) });
     }
 
     [AllowAnonymous]
@@ -37,12 +37,12 @@ public class ColaboradorAuthController(TermoTIDbContext context) : ControllerBas
     public async Task<IActionResult> Cadastrar(LoginColaboradorDto dto)
     {
         if (!IdentificacaoValida(dto))
-            return BadRequest(new { mensagem = "Informe seu nome completo e um CPF válido." });
+            return BadRequest(new { mensagem = "Informe seu nome completo e um CPF ou CNPJ válido." });
         if (string.IsNullOrWhiteSpace(dto.Senha) || dto.Senha.Length < 8 || dto.Senha.Length > 128)
             return BadRequest(new { mensagem = "Crie uma senha de 8 a 128 caracteres." });
         var cpf = IdentidadeColaborador.Cpf(dto.CPF);
         if (await context.ContasColaboradores.AnyAsync(c => c.CPF == cpf))
-            return Conflict(new { mensagem = "CPF já cadastrado. Volte e entre com sua senha." });
+            return Conflict(new { mensagem = "CPF ou CNPJ já cadastrado. Volte e entre com sua senha." });
 
         var colaboradores = await context.Colaboradores.ToListAsync();
         var porCpf = colaboradores.Where(c => IdentidadeColaborador.Cpf(c.CPF) == cpf).ToList();
@@ -76,11 +76,11 @@ public class ColaboradorAuthController(TermoTIDbContext context) : ControllerBas
     public async Task<IActionResult> Login(LoginColaboradorDto dto)
     {
         if (!IdentificacaoValida(dto) || string.IsNullOrEmpty(dto.Senha) || dto.Senha.Length > 128)
-            return BadRequest(new { mensagem = "Informe nome completo, CPF válido e senha." });
+            return BadRequest(new { mensagem = "Informe nome completo, CPF ou CNPJ válido e senha." });
         var cpf = IdentidadeColaborador.Cpf(dto.CPF);
         var conta = await context.ContasColaboradores.SingleOrDefaultAsync(c => c.CPF == cpf);
         if (conta == null || hasher.VerifyHashedPassword(conta, conta.SenhaHash, dto.Senha) == PasswordVerificationResult.Failed)
-            return Unauthorized(new { mensagem = "CPF ou senha incorretos." });
+            return Unauthorized(new { mensagem = "CPF/CNPJ ou senha incorretos." });
         var colaborador = await context.Colaboradores.FindAsync(conta.ColaboradorId);
         if (colaborador == null || !IdentidadeColaborador.NomeCompativel(colaborador.NomeCompleto, dto.NomeCompleto))
             return Unauthorized(new { mensagem = "Confira o nome completo informado." });

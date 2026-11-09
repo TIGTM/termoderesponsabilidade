@@ -469,16 +469,50 @@
         </section>
 
         <section class="assinatura-area">
-            <div class="assinatura-header">
+            <section class="email-autorizacao" aria-labelledby="tituloEmailAutorizacao">
                 <div>
-                    <h2>Assinatura eletrônica</h2>
-                    <p>Desenhe sua assinatura no campo abaixo.</p>
+                    <h3 id="tituloEmailAutorizacao">Confirmação por e-mail</h3>
+                    <p>Valide um e-mail para receber o código necessário para assinar este termo.</p>
                 </div>
+                <div id="emailJaValidado" class="email-validado hidden">
+                    <span>E-mail validado: <strong id="emailMascarado"></strong></span>
+                    <button type="button" class="btn-secondary" id="btnAlterarEmail">Alterar e-mail</button>
+                </div>
+                <form id="formEmailAutorizacao" novalidate>
+                    <label for="emailAutorizacao">Seu e-mail pessoal</label>
+                    <div class="email-autorizacao-acoes">
+                        <input type="email" id="emailAutorizacao" autocomplete="email" maxlength="254" aria-describedby="mensagemEmailAutorizacao" placeholder="nome@exemplo.com">
+                        <button type="submit" class="btn-secondary" id="btnEnviarCodigoEmail">Enviar código</button>
+                    </div>
+                    <div id="areaCodigoEmail" class="codigo-email hidden">
+                        <label for="codigoEmail">Código recebido por e-mail</label>
+                        <input type="text" id="codigoEmail" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-describedby="mensagemEmailAutorizacao" placeholder="000000">
+                        <button type="button" class="btn-primary" id="btnConfirmarEmail">Validar e-mail</button>
+                    </div>
+                    <p id="mensagemEmailAutorizacao" role="status" aria-live="polite"></p>
+                </form>
+            </section>
+            <div class="assinatura-actions"><button type="button" class="btn-primary" id="btnAssinar">Receber código para assinar</button></div>
+            <div id="areaConfirmacaoAssinatura" class="confirmacao-assinatura hidden" aria-live="polite">
+                <h3>Confirme o código</h3>
+                <p id="orientacaoCodigoAssinatura"></p>
+                <label for="codigoAssinatura">Código de assinatura</label>
+                <input type="text" id="codigoAssinatura" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-describedby="mensagemCodigoAssinatura">
+                <div class="assinatura-actions">
+                    <button type="button" class="btn-secondary" id="btnReenviarCodigo">Reenviar código</button>
+                    <button type="button" class="btn-primary" id="btnConfirmarAssinatura">Confirmar código</button>
+                </div>
+                <p id="mensagemCodigoAssinatura" role="status" aria-live="polite"></p>
             </div>
-            <div class="assinatura-canvas-wrapper"><canvas id="canvasAssinatura" width="900" height="260"></canvas>
-            </div>
-            <div class="assinatura-actions"><button type="button" class="btn-secondary" id="btnLimparAssinatura">Limpar
-                    assinatura</button><button type="button" class="btn-primary" id="btnAssinar">Assinar termo</button>
+            <div id="areaDesenhoAssinatura" class="hidden">
+                <div class="assinatura-header">
+                    <div>
+                        <h2>Assinatura eletrônica</h2>
+                        <p>Código confirmado. Desenhe sua assinatura no campo abaixo.</p>
+                    </div>
+                </div>
+                <div class="assinatura-canvas-wrapper"><canvas id="canvasAssinatura" width="900" height="260"></canvas></div>
+                <div class="assinatura-actions"><button type="button" class="btn-secondary" id="btnLimparAssinatura">Limpar assinatura</button><button type="button" class="btn-primary" id="btnFinalizarAssinatura">Assinar termo</button></div>
             </div>
         </section>
 

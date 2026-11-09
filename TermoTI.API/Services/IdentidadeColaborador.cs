@@ -22,6 +22,27 @@ public static class IdentidadeColaborador
         return true;
     }
 
+    public static bool CnpjValido(string valor)
+    {
+        if (valor.Length != 14 || valor.Distinct().Count() == 1) return false;
+        var pesos = new[] { 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
+        for (var indice = 0; indice < 2; indice++)
+        {
+            var soma = 0;
+            for (var i = 0; i < pesos.Length + indice; i++)
+                soma += (valor[i] - '0') * (indice == 0 ? pesos[i] : new[] { 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 }[i]);
+            var digito = (soma % 11) < 2 ? 0 : 11 - soma % 11;
+            if (valor[12 + indice] - '0' != digito) return false;
+        }
+        return true;
+    }
+
+    public static bool DocumentoValido(string? valor)
+    {
+        var documento = Cpf(valor);
+        return CpfValido(documento) || CnpjValido(documento);
+    }
+
     public static string[] PartesNome(string? nome) => Regex.Matches(
         new string((nome ?? "").Normalize(NormalizationForm.FormD)
             .Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)

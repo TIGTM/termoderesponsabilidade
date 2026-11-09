@@ -22,25 +22,6 @@ public class ColaboradoresController : ControllerBase
         _context = context;
     }
 
-    [AllowAnonymous]
-    [HttpGet("/api/colaboradores")]
-    public async Task<IActionResult> GetColaboradoresPublico()
-    {
-        var colaboradores = await _context.Colaboradores
-            .AsNoTracking()
-            .OrderBy(c => c.NomeCompleto)
-            .Select(c => new
-            {
-                id = c.Id,
-                nome = c.Nome,
-                nomeCompleto = c.NomeCompleto,
-                email = c.Email
-            })
-            .ToListAsync();
-
-        return Ok(colaboradores);
-    }
-
     // Permite ao colaborador autenticado atualizar apenas seus próprios dados.
     [Authorize(AuthenticationSchemes = ColaboradorScheme)]
     [HttpPut("/api/colaboradores/{id:int}")]
@@ -90,6 +71,8 @@ public class ColaboradoresController : ControllerBase
         colaboradorExistente.Cidade = colaborador.Cidade;
         colaboradorExistente.Estado = colaborador.Estado;
         colaboradorExistente.Telefone = colaborador.Telefone;
+        if (!string.Equals(colaboradorExistente.Email?.Trim(), colaborador.Email?.Trim(), StringComparison.OrdinalIgnoreCase))
+            colaboradorExistente.EmailValidadoEm = null;
         colaboradorExistente.Email = colaborador.Email;
 
         await _context.SaveChangesAsync();
@@ -172,6 +155,8 @@ public class ColaboradoresController : ControllerBase
         colaboradorExistente.Cidade = colaborador.Cidade;
         colaboradorExistente.Estado = colaborador.Estado;
         colaboradorExistente.Telefone = colaborador.Telefone;
+        if (!string.Equals(colaboradorExistente.Email?.Trim(), colaborador.Email?.Trim(), StringComparison.OrdinalIgnoreCase))
+            colaboradorExistente.EmailValidadoEm = null;
         colaboradorExistente.Email = colaborador.Email;
 
         await _context.SaveChangesAsync();

@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using TermoTI.API.Data;
 using TermoTI.API.Models;
@@ -6,6 +7,7 @@ using TermoTI.API.Models;
 namespace TermoTI.API.Controllers;
 
 [ApiController]
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 public class TermoItensController : ControllerBase
 {

@@ -22,6 +22,68 @@ namespace TermoTI.API.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("TermoTI.API.Models.CodigoAutorizacao", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CodigoHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ColaboradorId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ConfirmadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CriadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DocumentoHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<DateTime>("ExpiraEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Finalidade")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("nvarchar(32)");
+
+                    b.Property<int>("Tentativas")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("TermoId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UsadoEm")
+                        .HasColumnType("datetime2");
+
+                    b.Property<byte[]>("Versao")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColaboradorId", "Finalidade", "CriadoEm");
+
+                    b.HasIndex("TermoId", "Finalidade", "CriadoEm");
+
+                    b.ToTable("CodigosAutorizacao");
+                });
+
             modelBuilder.Entity("TermoTI.API.Models.Colaborador", b =>
                 {
                     b.Property<int>("Id")
@@ -44,6 +106,9 @@ namespace TermoTI.API.Migrations
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("EmailValidadoEm")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Estado")
                         .HasColumnType("nvarchar(max)");
@@ -318,6 +383,20 @@ namespace TermoTI.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UsuariosAdmin");
+                });
+
+            modelBuilder.Entity("TermoTI.API.Models.CodigoAutorizacao", b =>
+                {
+                    b.HasOne("TermoTI.API.Models.Colaborador", null)
+                        .WithMany()
+                        .HasForeignKey("ColaboradorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("TermoTI.API.Models.Termo", null)
+                        .WithMany()
+                        .HasForeignKey("TermoId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("TermoTI.API.Models.ContaColaborador", b =>

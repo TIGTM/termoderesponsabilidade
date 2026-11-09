@@ -127,6 +127,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 builder.Services.AddScoped<ExcelImportService>();
+builder.Services.AddScoped<IEmailAutorizacaoService, EmailAutorizacaoService>();
 
 var app = builder.Build();
 

@@ -1,10 +1,14 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TermoTI.API.Data;
 using TermoTI.API.DTOs;
 using TermoTI.API.Models;
+using TermoTI.API.Services;
 
 namespace TermoTI.API.Controllers;
 
@@ -13,12 +17,17 @@ namespace TermoTI.API.Controllers;
 public class TermosController : ControllerBase
 {
     private const string ColaboradorScheme = "ColaboradorCookie";
+    private const int LimiteDocumentoHtml = 2 * 1024 * 1024;
 
+    private const string FinalidadeAssinatura = "AssinarTermo";
     private readonly TermoTIDbContext _context;
+    private readonly IEmailAutorizacaoService _emailService;
+    private readonly PasswordHasher<CodigoAutorizacao> _codigoHasher = new();
 
-    public TermosController(TermoTIDbContext context)
+    public TermosController(TermoTIDbContext context, IEmailAutorizacaoService emailService)
     {
         _context = context;
+        _emailService = emailService;
     }
 
     private bool TentarObterColaboradorAutenticado(out int colaboradorId)
@@ -173,6 +182,9 @@ public class TermosController : ControllerBase
         if (!TentarObterColaboradorAutenticado(out var colaboradorId))
             return Unauthorized();
 
+        if (string.IsNullOrWhiteSpace(dto.DocumentoHTML) || dto.DocumentoHTML.Length > LimiteDocumentoHtml)
+            return BadRequest(new { mensagem = "O documento do termo está vazio ou ultrapassa o limite permitido." });
+
         if (dto.ColaboradorId != colaboradorId)
         {
             return Forbid(ColaboradorScheme);
@@ -275,6 +287,86 @@ public class TermosController : ControllerBase
     }
 
     [Authorize(AuthenticationSchemes = ColaboradorScheme)]
+    [HttpPost("{id:int}/solicitar-codigo-assinatura")]
+    public async Task<IActionResult> SolicitarCodigoAssinatura(int id)
+    {
+        if (!TentarObterColaboradorAutenticado(out var colaboradorId)) return Unauthorized();
+        var termo = await _context.Termos.FirstOrDefaultAsync(t => t.Id == id && t.ColaboradorId == colaboradorId);
+        if (termo == null) return NotFound(new { mensagem = "Termo não encontrado." });
+        if (termo.Status == "Assinado") return BadRequest(new { mensagem = "Este termo já foi assinado." });
+        if (string.IsNullOrWhiteSpace(termo.DocumentoHTML)) return BadRequest(new { mensagem = "O documento do termo não está disponível." });
+
+        var colaborador = await _context.Colaboradores.FindAsync(colaboradorId);
+        if (colaborador?.EmailValidadoEm == null || !EmailAutorizacaoService.EmailValido(colaborador.Email))
+            return BadRequest(new { mensagem = "Valide seu e-mail antes de pedir o código de assinatura." });
+
+        var agora = DateTime.UtcNow;
+        var ultimo = await _context.CodigosAutorizacao.Where(c => c.TermoId == id && c.Finalidade == FinalidadeAssinatura && c.UsadoEm == null)
+            .OrderByDescending(c => c.CriadoEm).FirstOrDefaultAsync();
+        if (ultimo != null && ultimo.CriadoEm > agora.AddSeconds(-60))
+            return StatusCode(429, new { mensagem = "Aguarde um minuto antes de pedir outro código." });
+
+        var pendentes = await _context.CodigosAutorizacao.Where(c => c.TermoId == id && c.Finalidade == FinalidadeAssinatura && c.UsadoEm == null).ToListAsync();
+        pendentes.ForEach(c => c.ExpiraEm = agora);
+        var codigo = ColaboradorEmailController.GerarCodigo();
+        var desafio = new CodigoAutorizacao
+        {
+            ColaboradorId = colaboradorId,
+            TermoId = id,
+            Finalidade = FinalidadeAssinatura,
+            Email = ColaboradorEmailController.NormalizarEmail(colaborador.Email),
+            DocumentoHash = CalcularHash(termo.DocumentoHTML),
+            CriadoEm = agora,
+            ExpiraEm = agora.AddMinutes(15)
+        };
+        desafio.CodigoHash = _codigoHasher.HashPassword(desafio, codigo);
+        _context.CodigosAutorizacao.Add(desafio);
+        await _context.SaveChangesAsync();
+        try
+        {
+            await _emailService.EnviarCodigoAsync(desafio.Email, codigo, "Código para assinar seu termo", $"Seu código para assinar o Termo TI é: {codigo}. Ele vale por 15 minutos e só pode ser usado neste termo. Não compartilhe este código.", HttpContext.RequestAborted);
+        }
+        catch (InvalidOperationException erro)
+        {
+            desafio.ExpiraEm = agora;
+            await _context.SaveChangesAsync();
+            return StatusCode(503, new { mensagem = erro.Message });
+        }
+        return Ok(new { codigoAutorizacaoId = desafio.Id, emailMascarado = ColaboradorEmailController.MascararEmail(desafio.Email), expiraEm = desafio.ExpiraEm });
+    }
+
+    [Authorize(AuthenticationSchemes = ColaboradorScheme)]
+    [HttpPost("{id:int}/confirmar-codigo-assinatura")]
+    public async Task<IActionResult> ConfirmarCodigoAssinatura(int id, [FromBody] ConfirmarCodigoAssinaturaDto dto)
+    {
+        if (!TentarObterColaboradorAutenticado(out var colaboradorId)) return Unauthorized();
+        var termo = await _context.Termos.FirstOrDefaultAsync(t => t.Id == id && t.ColaboradorId == colaboradorId);
+        if (termo == null) return NotFound(new { mensagem = "Termo não encontrado." });
+        if (termo.Status == "Assinado") return BadRequest(new { mensagem = "Este termo já foi assinado." });
+
+        await using var transacao = await _context.Database.BeginTransactionAsync();
+        var desafio = await _context.CodigosAutorizacao.FirstOrDefaultAsync(c =>
+            c.Id == dto.CodigoAutorizacaoId && c.TermoId == id && c.ColaboradorId == colaboradorId &&
+            c.Finalidade == FinalidadeAssinatura && c.ConfirmadoEm == null && c.UsadoEm == null &&
+            c.ExpiraEm > DateTime.UtcNow && c.Tentativas < 5);
+        if (desafio == null || desafio.DocumentoHash != CalcularHash(termo.DocumentoHTML))
+            return BadRequest(new { mensagem = "Código inválido, expirado ou associado a outra versão do termo. Solicite outro código." });
+        if (string.IsNullOrWhiteSpace(dto.Codigo) || _codigoHasher.VerifyHashedPassword(desafio, desafio.CodigoHash, dto.Codigo.Trim()) == PasswordVerificationResult.Failed)
+        {
+            desafio.Tentativas++;
+            if (desafio.Tentativas >= 5) desafio.ExpiraEm = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            await transacao.CommitAsync();
+            return BadRequest(new { mensagem = "Código inválido. Confira o e-mail e tente novamente." });
+        }
+
+        desafio.ConfirmadoEm = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        await transacao.CommitAsync();
+        return Ok(new { mensagem = "Código confirmado. Você já pode desenhar sua assinatura." });
+    }
+
+    [Authorize(AuthenticationSchemes = ColaboradorScheme)]
     [HttpPost("{id:int}/assinar")]
     public async Task<IActionResult> AssinarTermo(
         int id,
@@ -304,6 +396,14 @@ public class TermosController : ControllerBase
                 mensagem = "Este termo já foi assinado."
             });
         }
+
+        await using var transacao = await _context.Database.BeginTransactionAsync();
+        var desafio = await _context.CodigosAutorizacao.FirstOrDefaultAsync(c =>
+            c.Id == dto.CodigoAutorizacaoId && c.TermoId == id && c.ColaboradorId == colaboradorId &&
+            c.Finalidade == FinalidadeAssinatura && c.ConfirmadoEm != null && c.UsadoEm == null &&
+            c.ExpiraEm > DateTime.UtcNow && c.Tentativas < 5);
+        if (desafio == null || desafio.DocumentoHash != CalcularHash(termo.DocumentoHTML))
+            return BadRequest(new { mensagem = "A confirmação do código expirou ou não corresponde a este termo. Solicite outro código." });
 
         if (string.IsNullOrWhiteSpace(dto.Assinatura))
         {
@@ -359,6 +459,7 @@ public class TermosController : ControllerBase
             }
 
             termo.Assinatura = assinatura;
+            desafio.UsadoEm = DateTime.UtcNow;
 
             termo.DocumentoFrente = ConverterBase64ParaBytes(
                 dto.DocumentoFrente
@@ -400,6 +501,7 @@ public class TermosController : ControllerBase
             }
 
             await _context.SaveChangesAsync();
+            await transacao.CommitAsync();
 
             return Ok(new
             {
@@ -409,6 +511,10 @@ public class TermosController : ControllerBase
                 status = termo.Status,
                 dataAssinatura = termo.DataAssinatura
             });
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new { mensagem = "Este código já foi utilizado. Solicite outro código para assinar." });
         }
         catch (FormatException)
         {
@@ -476,6 +582,9 @@ public class TermosController : ControllerBase
                 mensagem = "Não é permitido alterar um termo já assinado."
             });
         }
+
+        if (string.IsNullOrWhiteSpace(termoRecebido.DocumentoHTML) || termoRecebido.DocumentoHTML.Length > LimiteDocumentoHtml)
+            return BadRequest(new { mensagem = "O documento do termo está vazio ou ultrapassa o limite permitido." });
 
         if (termoRecebido.ColaboradorId != colaboradorId)
         {
@@ -627,6 +736,9 @@ public class TermosController : ControllerBase
 
         return arquivo;
     }
+
+    private static string CalcularHash(string? conteudo) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(conteudo ?? string.Empty)));
 
     private static string? ConverterBytesParaDataUrl(byte[]? arquivo)
     {

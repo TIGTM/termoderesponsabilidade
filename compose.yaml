@@ -35,6 +35,10 @@ services:
       ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=TermoTI;User Id=sa;Password=${MSSQL_SA_PASSWORD:?Defina MSSQL_SA_PASSWORD no arquivo .env};Encrypt=True;TrustServerCertificate=True"
       ADMIN_BOOTSTRAP_USER: ${ADMIN_BOOTSTRAP_USER:-}
       ADMIN_BOOTSTRAP_PASSWORD: ${ADMIN_BOOTSTRAP_PASSWORD:-}
+      MICROSOFTGRAPH__TENANTID: ${MICROSOFTGRAPH__TENANTID:-}
+      MICROSOFTGRAPH__CLIENTID: ${MICROSOFTGRAPH__CLIENTID:-}
+      MICROSOFTGRAPH__CLIENTSECRET: ${MICROSOFTGRAPH__CLIENTSECRET:-}
+      MICROSOFTGRAPH__SENDER: ${MICROSOFTGRAPH__SENDER:-}
     depends_on:
       sqlserver:
         condition: service_healthy

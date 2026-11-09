@@ -31,8 +31,8 @@
                     <input id="nomeCompleto" autocomplete="name" maxlength="200" aria-describedby="mensagemColaborador" required>
                 </div>
                 <div class="login-field">
-                    <label for="cpfLogin">CPF</label>
-                    <input id="cpfLogin" inputmode="numeric" maxlength="14" autocomplete="username" aria-describedby="mensagemColaborador" required>
+                    <label for="cpfLogin">CPF/CNPJ</label>
+                    <input id="cpfLogin" inputmode="numeric" maxlength="18" autocomplete="username" aria-describedby="mensagemColaborador" placeholder="CPF ou CNPJ" required>
                 </div>
                 <div id="etapaSenha" class="hidden">
                     <p id="orientacaoSenha"></p>
@@ -49,8 +49,8 @@
                 <button id="continuarLogin" type="submit" class="login-button">Continuar</button>
                 <p id="mensagemColaborador" role="status" aria-live="polite"></p>
                 <button id="alterarIdentificacao" type="button" class="btn-secondary hidden">Alterar nome ou CPF</button>
+                <a href="index.html" class="login-back-link">Voltar à escolha de acesso</a>
             </form>
-            <a href="index.html" class="login-back-link">Voltar à escolha de acesso</a>
 
             <form id="loginForm">
 
@@ -81,6 +81,8 @@
                 </button>
 
                 <p id="mensagem"></p>
+
+                <a href="index.html" class="login-back-link">Voltar à escolha de acesso</a>
 
             </form>
 

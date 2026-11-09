@@ -8,6 +8,8 @@ let termoJaAssinado = false;
 let termoAtual = null;
 let tipoTermoAtual = "CPF";
 let documentoInformado = "";
+let emailAutorizacaoValidado = false;
+let autorizacaoPendente = null;
 
 let razaoSocialCNPJ = "";
 let consultaCNPJConcluida = false;
@@ -46,6 +48,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     configurarCanvas();
     configurarBotoes();
     configurarDocumentos();
+    configurarEmailAutorizacao();
+    await carregarEmailAutorizacao();
 });
 
 function obterLocalizacao() {
@@ -268,6 +272,7 @@ function preencherDocumento() {
     definirTexto("assinaturaNomeContrato", nomeTermo);
     definirTexto("assinaturaNomeGuia", nomeTermo);
     definirTexto("assinaturaNomeDeclaracao", nomeTermo);
+    definirTexto("assinaturaNomeFisica", nomeTermo);
 
 
     const agora = new Date();
@@ -286,6 +291,7 @@ function preencherDocumento() {
     definirTexto("assinaturaCPFContrato", documento);
     definirTexto("assinaturaCPFGuia", documento);
     definirTexto("assinaturaCPFDeclaracao", documento);
+    definirTexto("assinaturaCPFFisica", documento);
 
     renderizarEquipamentosDocumento();
 }
@@ -665,6 +671,21 @@ function configurarBotoes() {
         );
     }
 
+    document.getElementById("btnConfirmarAssinatura")?.addEventListener(
+        "click",
+        confirmarAssinatura
+    );
+
+    document.getElementById("btnFinalizarAssinatura")?.addEventListener(
+        "click",
+        finalizarAssinatura
+    );
+
+    document.getElementById("btnReenviarCodigo")?.addEventListener(
+        "click",
+        reenviarCodigoAssinatura
+    );
+
     const btnBaixar =
         document.getElementById(
             "btnBaixarPDF"
@@ -690,6 +711,97 @@ function configurarBotoes() {
                     "colaborador.html";
             }
         );
+    }
+}
+
+function configurarEmailAutorizacao() {
+    document.getElementById("formEmailAutorizacao")?.addEventListener("submit", solicitarValidacaoEmail);
+    document.getElementById("btnConfirmarEmail")?.addEventListener("click", confirmarValidacaoEmail);
+    document.getElementById("btnAlterarEmail")?.addEventListener("click", () => {
+        emailAutorizacaoValidado = false;
+        document.getElementById("emailJaValidado")?.classList.add("hidden");
+        document.getElementById("formEmailAutorizacao")?.classList.remove("hidden");
+        document.getElementById("areaCodigoEmail")?.classList.add("hidden");
+        const input = document.getElementById("emailAutorizacao");
+        if (input) { input.value = ""; input.focus(); }
+    });
+}
+
+async function carregarEmailAutorizacao() {
+    try {
+        const resposta = await fetch(`${API_URL}/colaborador-email`, { credentials: "include", cache: "no-store" });
+        if (!resposta.ok) throw new Error("Não foi possível consultar o e-mail de confirmação.");
+        const dados = await resposta.json();
+        emailAutorizacaoValidado = Boolean(dados.validado);
+        if (emailAutorizacaoValidado) mostrarEmailValidado(dados.emailMascarado);
+    } catch (erro) {
+        console.error("Erro ao carregar e-mail de confirmação:", erro);
+        definirMensagemEmail(erro.message || "Não foi possível consultar o e-mail de confirmação.");
+    }
+}
+
+function mostrarEmailValidado(emailMascarado) {
+    document.getElementById("emailMascarado").textContent = emailMascarado || "e-mail validado";
+    document.getElementById("emailJaValidado")?.classList.remove("hidden");
+    document.getElementById("formEmailAutorizacao")?.classList.add("hidden");
+}
+
+function definirMensagemEmail(mensagem) {
+    const campo = document.getElementById("mensagemEmailAutorizacao");
+    if (campo) campo.textContent = mensagem;
+}
+
+async function solicitarValidacaoEmail(evento) {
+    evento.preventDefault();
+    const email = document.getElementById("emailAutorizacao")?.value.trim() || "";
+    const botao = document.getElementById("btnEnviarCodigoEmail");
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+        definirMensagemEmail("Informe um e-mail válido.");
+        document.getElementById("emailAutorizacao")?.focus();
+        return;
+    }
+    botao.disabled = true;
+    definirMensagemEmail("Enviando código...");
+    try {
+        const resposta = await fetch(`${API_URL}/colaborador-email/solicitar-validacao`, {
+            method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email })
+        });
+        if (!resposta.ok) throw new Error(await obterMensagemErro(resposta));
+        const dados = await resposta.json();
+        document.getElementById("areaCodigoEmail")?.classList.remove("hidden");
+        definirMensagemEmail(`Código enviado para ${dados.emailMascarado}.`);
+        document.getElementById("codigoEmail")?.focus();
+    } catch (erro) {
+        definirMensagemEmail(erro.message || "Não foi possível enviar o código.");
+    } finally {
+        botao.disabled = false;
+    }
+}
+
+async function confirmarValidacaoEmail() {
+    const email = document.getElementById("emailAutorizacao")?.value.trim() || "";
+    const codigo = document.getElementById("codigoEmail")?.value.trim() || "";
+    const botao = document.getElementById("btnConfirmarEmail");
+    if (!/^\d{6}$/.test(codigo)) {
+        definirMensagemEmail("Informe o código de 6 dígitos recebido por e-mail.");
+        document.getElementById("codigoEmail")?.focus();
+        return;
+    }
+    botao.disabled = true;
+    try {
+        const resposta = await fetch(`${API_URL}/colaborador-email/confirmar-validacao`, {
+            method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, codigo })
+        });
+        if (!resposta.ok) throw new Error(await obterMensagemErro(resposta));
+        const dados = await resposta.json();
+        emailAutorizacaoValidado = true;
+        if (colaborador) colaborador.email = email;
+        mostrarEmailValidado(dados.emailMascarado);
+        mostrarToast("E-mail validado. Agora você pode pedir o código para assinar.", "sucesso");
+    } catch (erro) {
+        definirMensagemEmail(erro.message || "Não foi possível validar o e-mail.");
+    } finally {
+        botao.disabled = false;
     }
 }
 
@@ -960,20 +1072,17 @@ async function assinarTermo() {
         return;
     }
 
+    if (!emailAutorizacaoValidado) {
+        mostrarToast("Valide seu e-mail antes de pedir o código de assinatura.", "erro");
+        document.getElementById("emailAutorizacao")?.focus();
+        return;
+    }
+
     if (tipoTermoAtual === "CNPJ" && !consultaCNPJConcluida) {
         mostrarToast(
             "Não foi possível confirmar a razão social. Verifique o CNPJ antes de assinar.",
             "erro"
         );
-        return;
-    }
-
-    if (!assinaturaExiste()) {
-        mostrarToast(
-            "Faça sua assinatura no campo indicado.",
-            "erro"
-        );
-
         return;
     }
 
@@ -1001,20 +1110,6 @@ async function assinarTermo() {
 
         return;
     }
-
-    assinaturaDataURL =
-        canvas.toDataURL("image/png");
-
-    aplicarAssinatura(
-        assinaturaDataURL
-    );
-
-    const agora =
-        new Date();
-
-    preencherDataAssinatura(
-        agora
-    );
 
     const documento =
         document.getElementById(
@@ -1123,123 +1218,26 @@ async function assinarTermo() {
             }
         }
 
-        mostrarToast(
-            "Salvando assinatura...",
-            "info"
+        const respostaCodigo = await fetch(
+            `${API_URL}/termos/${termoId}/solicitar-codigo-assinatura`,
+            { method: "POST", credentials: "include" }
         );
-
-
-        const respostaAssinatura =
-            await fetch(
-                `${API_URL}/termos/${termoId}/assinar`,
-                {
-                    method: "POST",
-                    credentials: "include",
-
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-
-                    body: JSON.stringify({
-                        assinatura: assinaturaDataURL,
-
-                        latitude: localizacao.latitude,
-                        longitude: localizacao.longitude,
-                        precisaoLocalizacao: localizacao.precisaoLocalizacao,
-
-                        tipoDocumento: dadosDocumento.tipoDocumento,
-                        nomeDocumento: dadosDocumento.nomeDocumento,
-
-                        documentoFrente: dadosDocumento.documentoFrente,
-                        documentoVerso: dadosDocumento.documentoVerso
-                    })
-                }
-            );
-
-
-        if (!respostaAssinatura.ok) {
-            const erro = await obterMensagemErro(respostaAssinatura);
-
-            console.error("Erro ao salvar assinatura:", {
-                status: respostaAssinatura.status,
-                mensagem: erro
-            });
-
-            throw new Error(
-                `Erro HTTP ${respostaAssinatura.status}: ${erro || "Não foi possível salvar a assinatura."
-                }`
-            );
+        if (!respostaCodigo.ok) {
+            throw new Error(await obterMensagemErro(respostaCodigo));
         }
 
-
-        const resultadoAssinatura =
-            await respostaAssinatura.json();
-
-        termoAtual = {
-            ...(termoAtual || {}),
-            ...resultadoAssinatura,
-            id: termoId,
-            colaboradorId:
-                colaborador.id,
-            status: "Assinado",
-            dataAssinatura:
-                resultadoAssinatura.dataAssinatura ||
-                agora.toISOString(),
-            assinatura:
-                assinaturaDataURL,
-            tipoDocumento:
-                dadosDocumento.tipoDocumento,
-            nomeDocumento:
-                dadosDocumento.nomeDocumento
+        const dadosCodigo = await respostaCodigo.json();
+        autorizacaoPendente = {
+            termoId,
+            dadosDocumento,
+            localizacao,
+            codigoAutorizacaoId: dadosCodigo.codigoAutorizacaoId
         };
-
-        termoJaAssinado = true;
-
-        colaborador.temTermoAssinado =
-            true;
-
-        sessionStorage.setItem(
-            "colaboradorTermo",
-            JSON.stringify({
-                ...dadosSessao,
-                colaborador: colaborador,
-                equipamentos: equipamentos,
-                tipoTermo: tipoTermoAtual,
-                documentoInformado: documentoInformado
-            })
-        );
-
-        bloquearAssinatura();
-        bloquearDocumento();
-
-        document.getElementById(
-            "statusTermo"
-        ).textContent =
-            "TERMO ASSINADO";
-
-        document
-            .getElementById("statusTermo")
-            .classList.add("assinado");
-
-        document.getElementById(
-            "dataHoraAssinatura"
-        ).textContent =
-            `Assinado em ${formatarDataHora(
-                agora
-            )}`;
-
-        document
-            .getElementById(
-                "areaTermoAssinado"
-            )
-            .classList.remove(
-                "hidden"
-            );
-
-        mostrarToast(
-            "Termo assinado e salvo com sucesso.",
-            "sucesso"
-        );
+        document.getElementById("areaConfirmacaoAssinatura")?.classList.remove("hidden");
+        document.getElementById("orientacaoCodigoAssinatura").textContent =
+            `Enviamos um código de 6 dígitos para ${dadosCodigo.emailMascarado}. Ele expira em 15 minutos.`;
+        document.getElementById("codigoAssinatura")?.focus();
+        mostrarToast("Código enviado. Confira seu e-mail para concluir a assinatura.", "info");
     } catch (erro) {
         console.error(
             "Erro ao assinar termo:",
@@ -1251,6 +1249,120 @@ async function assinarTermo() {
             "Não foi possível salvar o termo.",
             "erro"
         );
+    }
+}
+
+async function reenviarCodigoAssinatura() {
+    if (!autorizacaoPendente) return;
+
+    const resposta = await fetch(
+        `${API_URL}/termos/${autorizacaoPendente.termoId}/solicitar-codigo-assinatura`,
+        { method: "POST", credentials: "include" }
+    );
+
+    if (!resposta.ok) {
+        document.getElementById("mensagemCodigoAssinatura").textContent = await obterMensagemErro(resposta);
+        return;
+    }
+
+    const dados = await resposta.json();
+    autorizacaoPendente.codigoAutorizacaoId = dados.codigoAutorizacaoId;
+    document.getElementById("codigoAssinatura").value = "";
+    document.getElementById("orientacaoCodigoAssinatura").textContent =
+        `Enviamos outro código para ${dados.emailMascarado}. Ele expira em 15 minutos.`;
+}
+
+async function confirmarAssinatura() {
+    if (!autorizacaoPendente) return;
+
+    const codigo = document.getElementById("codigoAssinatura")?.value.trim() || "";
+    const mensagem = document.getElementById("mensagemCodigoAssinatura");
+    const botao = document.getElementById("btnConfirmarAssinatura");
+    if (!/^\d{6}$/.test(codigo)) {
+        mensagem.textContent = "Informe o código de 6 dígitos enviado para seu e-mail.";
+        document.getElementById("codigoAssinatura")?.focus();
+        return;
+    }
+
+    botao.disabled = true;
+    mensagem.textContent = "Confirmando assinatura...";
+
+    try {
+        const resposta = await fetch(`${API_URL}/termos/${autorizacaoPendente.termoId}/confirmar-codigo-assinatura`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                codigoAutorizacaoId: autorizacaoPendente.codigoAutorizacaoId,
+                codigo
+            })
+        });
+
+        if (!resposta.ok) throw new Error(await obterMensagemErro(resposta));
+        document.getElementById("areaConfirmacaoAssinatura").classList.add("hidden");
+        document.getElementById("areaDesenhoAssinatura").classList.remove("hidden");
+        document.getElementById("canvasAssinatura")?.focus();
+        mostrarToast("Código confirmado. Desenhe sua assinatura para concluir.", "sucesso");
+    } catch (erro) {
+        mensagem.textContent = erro.message || "Não foi possível confirmar o código.";
+    } finally {
+        botao.disabled = false;
+    }
+}
+
+async function finalizarAssinatura() {
+    if (!autorizacaoPendente || termoJaAssinado) return;
+    if (!assinaturaExiste()) {
+        mostrarToast("Faça sua assinatura no campo indicado.", "erro");
+        return;
+    }
+
+    const botao = document.getElementById("btnFinalizarAssinatura");
+    const dados = autorizacaoPendente.dadosDocumento;
+    const localizacao = autorizacaoPendente.localizacao;
+    assinaturaDataURL = canvas.toDataURL("image/png");
+    aplicarAssinatura(assinaturaDataURL);
+    const agora = new Date();
+    preencherDataAssinatura(agora);
+    botao.disabled = true;
+
+    try {
+        const resposta = await fetch(`${API_URL}/termos/${autorizacaoPendente.termoId}/assinar`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                codigoAutorizacaoId: autorizacaoPendente.codigoAutorizacaoId,
+                assinatura: assinaturaDataURL,
+                latitude: localizacao.latitude,
+                longitude: localizacao.longitude,
+                precisaoLocalizacao: localizacao.precisaoLocalizacao,
+                tipoDocumento: dados.tipoDocumento,
+                nomeDocumento: dados.nomeDocumento,
+                documentoFrente: dados.documentoFrente,
+                documentoVerso: dados.documentoVerso
+            })
+        });
+        if (!resposta.ok) throw new Error(await obterMensagemErro(resposta));
+
+        const resultado = await resposta.json();
+        termoAtual = { ...(termoAtual || {}), ...resultado, id: autorizacaoPendente.termoId, colaboradorId: colaborador.id, status: "Assinado", dataAssinatura: resultado.dataAssinatura || agora.toISOString() };
+        termoJaAssinado = true;
+        colaborador.temTermoAssinado = true;
+        sessionStorage.setItem("colaboradorTermo", JSON.stringify({ ...dadosSessao, colaborador, equipamentos, tipoTermo: tipoTermoAtual, documentoInformado }));
+        bloquearAssinatura();
+        bloquearDocumento();
+        document.getElementById("statusTermo").textContent = "TERMO ASSINADO";
+        document.getElementById("statusTermo").classList.add("assinado");
+        document.getElementById("dataHoraAssinatura").textContent = `Assinado em ${formatarDataHora(agora)}`;
+        document.getElementById("areaTermoAssinado").classList.remove("hidden");
+        document.getElementById("areaDesenhoAssinatura").classList.add("hidden");
+        autorizacaoPendente = null;
+        mostrarToast("Termo assinado e salvo com sucesso.", "sucesso");
+    } catch (erro) {
+        mostrarToast(erro.message || "Não foi possível concluir a assinatura.", "erro");
+    } finally {
+        botao.disabled = false;
     }
 }
 
@@ -1396,6 +1508,10 @@ function bloquearAssinatura() {
 
         document.getElementById(
             "btnAssinar"
+        ),
+
+        document.getElementById(
+            "btnFinalizarAssinatura"
         )
     ];
 
@@ -1555,11 +1671,11 @@ async function baixarPDF() {
                     .document-page {
                         display: block !important;
                         width: 210mm !important;
-                        height: 297mm !important;
                         min-height: 297mm !important;
+                        height: 297mm !important;
                         max-height: 297mm !important;
                         margin: 0 !important;
-                        padding: 0 !important;
+                        padding: 22mm 20mm 20mm !important;
                         box-sizing: border-box !important;
                         background: #ffffff !important;
                         overflow: hidden !important;
@@ -1639,6 +1755,8 @@ async function baixarPDF() {
                 )
         );
 
+        paginarDocumentoParaPDF(iframeDocument);
+
         const paginas =
             iframeDocument.querySelectorAll(
                 ".document-page"
@@ -1671,17 +1789,8 @@ async function baixarPDF() {
                     true
             });
 
-        const margem = 12;
         const larguraPagina = 210;
         const alturaPagina = 297;
-
-        const larguraConteudo =
-            larguraPagina -
-            margem * 2;
-
-        const alturaConteudo =
-            alturaPagina -
-            margem * 2;
 
         for (
             let i = 0;
@@ -1751,10 +1860,10 @@ async function baixarPDF() {
             pdf.addImage(
                 imagem,
                 "JPEG",
-                margem,
-                margem,
-                larguraConteudo,
-                alturaConteudo,
+                0,
+                0,
+                larguraPagina,
+                alturaPagina,
                 undefined,
                 "FAST"
             );
@@ -1786,6 +1895,47 @@ async function baixarPDF() {
             iframe.remove();
         }
     }
+}
+
+function paginarDocumentoParaPDF(documento) {
+    const paginasOriginais = Array.from(documento.querySelectorAll(".document-page"));
+
+    paginasOriginais.forEach(paginaOriginal => {
+        const conteudoOriginal = paginaOriginal.querySelector(":scope > .document-content");
+        if (!conteudoOriginal) return;
+
+        const equipamentos = conteudoOriginal.querySelector(":scope > #equipamentosDocumento");
+        if (equipamentos) {
+            Array.from(equipamentos.children).forEach(bloco => {
+                conteudoOriginal.insertBefore(bloco, equipamentos);
+            });
+            equipamentos.remove();
+        }
+
+        const itens = Array.from(conteudoOriginal.children);
+        if (!itens.length) return;
+
+        conteudoOriginal.replaceChildren();
+        let paginaAtual = paginaOriginal;
+        let conteudoAtual = conteudoOriginal;
+
+        itens.forEach(item => {
+            conteudoAtual.appendChild(item);
+            const ultrapassouLimite = paginaAtual.scrollHeight > paginaAtual.clientHeight + 1;
+
+            if (!ultrapassouLimite || conteudoAtual.children.length === 1) return;
+
+            conteudoAtual.removeChild(item);
+            const proximaPagina = paginaOriginal.cloneNode(false);
+            const proximoConteudo = documento.createElement("div");
+            proximoConteudo.className = "document-content";
+            proximaPagina.appendChild(proximoConteudo);
+            paginaAtual.parentNode.insertBefore(proximaPagina, paginaAtual.nextSibling);
+            paginaAtual = proximaPagina;
+            conteudoAtual = proximoConteudo;
+            conteudoAtual.appendChild(item);
+        });
+    });
 }
 
 function normalizarNomeArquivo(nome) {

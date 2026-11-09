@@ -2,6 +2,8 @@ namespace TermoTI.API.DTOs;
 
 public class AssinarTermoDto
 {
+    public int CodigoAutorizacaoId { get; set; }
+
     public string Assinatura { get; set; } = string.Empty;
 
     public decimal? Latitude { get; set; }

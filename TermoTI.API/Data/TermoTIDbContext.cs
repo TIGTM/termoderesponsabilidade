@@ -12,6 +12,7 @@ public class TermoTIDbContext : DbContext
 
     public DbSet<Colaborador> Colaboradores { get; set; }
     public DbSet<ContaColaborador> ContasColaboradores { get; set; }
+    public DbSet<CodigoAutorizacao> CodigosAutorizacao { get; set; }
 
     public DbSet<UsuarioAdmin> UsuariosAdmin { get; set; }
 
@@ -30,6 +31,16 @@ public class TermoTIDbContext : DbContext
         modelBuilder.Entity<ContaColaborador>().HasIndex(c => c.ColaboradorId).IsUnique();
         modelBuilder.Entity<ContaColaborador>().HasOne<Colaborador>().WithOne()
             .HasForeignKey<ContaColaborador>(c => c.ColaboradorId).OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<CodigoAutorizacao>().Property(c => c.Finalidade).HasMaxLength(32);
+        modelBuilder.Entity<CodigoAutorizacao>().Property(c => c.Email).HasMaxLength(254);
+        modelBuilder.Entity<CodigoAutorizacao>().Property(c => c.DocumentoHash).HasMaxLength(64);
+        modelBuilder.Entity<CodigoAutorizacao>().HasIndex(c => new { c.ColaboradorId, c.Finalidade, c.CriadoEm });
+        modelBuilder.Entity<CodigoAutorizacao>().HasIndex(c => new { c.TermoId, c.Finalidade, c.CriadoEm });
+        modelBuilder.Entity<CodigoAutorizacao>().HasOne<Colaborador>().WithMany()
+            .HasForeignKey(c => c.ColaboradorId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<CodigoAutorizacao>().HasOne<Termo>().WithMany()
+            .HasForeignKey(c => c.TermoId).OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<Termo>()
             .HasOne<Colaborador>()

@@ -3,7 +3,7 @@
     document.getElementById("loginForm").classList.add("hidden");
     const form = document.getElementById("acessoColaborador");
     form.classList.remove("hidden");
-    document.querySelector(".login-subtitle").textContent = "Informe seu nome completo e CPF para acessar seu termo.";
+    document.querySelector(".login-subtitle").textContent = "Informe seu nome completo e CPF/CNPJ para acessar seu termo.";
     const nome = document.getElementById("nomeCompleto");
     const cpf = document.getElementById("cpfLogin");
     const senha = document.getElementById("senhaPessoal");
@@ -14,9 +14,13 @@
     let cadastrado = null;
     let ocupado = false;
     cpf.addEventListener("input", () => {
-        cpf.value = cpf.value.replace(/\D/g, "").slice(0, 11)
-            .replace(/^(\d{3})(\d)/, "$1.$2").replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
-            .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4");
+        const numeros = cpf.value.replace(/\D/g, "").slice(0, 14);
+        cpf.value = numeros.length > 11
+            ? numeros.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+                .replace(/^(\d{2})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3/$4")
+                .replace(/^(\d{2})\.(\d{3})\.(\d{3})\/(\d{4})(\d)/, "$1.$2.$3/$4-$5")
+            : numeros.replace(/^(\d{3})(\d)/, "$1.$2").replace(/^(\d{3})\.(\d{3})(\d)/, "$1.$2.$3")
+                .replace(/(\d{3})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3-$4");
     });
     alterar.addEventListener("click", () => {
         cadastrado = null;
@@ -45,7 +49,8 @@
         [nome, cpf, senha, confirmacao].forEach(c => c.removeAttribute("aria-invalid"));
         mensagem.textContent = "";
         if (nome.value.trim().split(/\s+/).length < 2) return erroCampo(nome, "Informe seu nome completo.");
-        if (cpf.value.replace(/\D/g, "").length !== 11) return erroCampo(cpf, "Informe um CPF com 11 dígitos.");
+        const documento = cpf.value.replace(/\D/g, "");
+        if (documento.length !== 11 && documento.length !== 14) return erroCampo(cpf, "Informe um CPF (11 dígitos) ou CNPJ (14 dígitos).");
         if (cadastrado !== null && (!senha.value || (!cadastrado && senha.value.length < 8)))
             return erroCampo(senha, cadastrado ? "Informe sua senha." : "Crie uma senha de pelo menos 8 caracteres.");
         if (cadastrado === false && senha.value !== confirmacao.value)

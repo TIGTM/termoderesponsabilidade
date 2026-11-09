@@ -25,4 +25,6 @@ public class Colaborador
     public string? Telefone { get; set; }
 
     public string? Email { get; set; }
+
+    public DateTime? EmailValidadoEm { get; set; }
 }

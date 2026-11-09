@@ -741,10 +741,11 @@ async function baixarTermoAssinado() {
                         display: block !important;
                         position: relative !important;
                         width: 794px !important;
-                        height: 1123px !important;
                         min-height: 1123px !important;
+                        height: 1123px !important;
                         max-height: 1123px !important;
                         margin: 0 !important;
+                        padding: 83px 76px 76px !important;
                         box-sizing: border-box !important;
                         background: #fff !important;
                         overflow: hidden !important;
@@ -826,6 +827,8 @@ async function baixarTermoAssinado() {
             });
         });
 
+        paginarDocumentoParaPDF(iframeDocument);
+
         const paginas = iframeDocument.querySelectorAll(".document-page");
 
         if (!paginas.length) {
@@ -847,12 +850,10 @@ async function baixarTermoAssinado() {
 
         const larguraPagina = 210;
         const alturaPagina = 297;
-        const margem = 10;
-        const larguraConteudo = larguraPagina - margem * 2;
-        const alturaConteudo = alturaPagina - margem * 2;
 
         for (let i = 0; i < paginas.length; i++) {
             const pagina = paginas[i];
+            const rect = pagina.getBoundingClientRect();
 
             const canvas = await html2canvas(pagina, {
                 scale: 2,
@@ -860,10 +861,10 @@ async function baixarTermoAssinado() {
                 allowTaint: false,
                 backgroundColor: "#ffffff",
                 logging: false,
-                width: 794,
-                height: 1123,
-                windowWidth: 794,
-                windowHeight: 1123,
+                width: Math.ceil(rect.width),
+                height: Math.ceil(rect.height),
+                windowWidth: Math.ceil(rect.width),
+                windowHeight: Math.ceil(rect.height),
                 scrollX: 0,
                 scrollY: 0
             });
@@ -874,24 +875,13 @@ async function baixarTermoAssinado() {
                 pdf.addPage();
             }
 
-            const proporcao = Math.min(
-                larguraConteudo / canvas.width,
-                alturaConteudo / canvas.height
-            );
-
-            const largura = canvas.width * proporcao;
-            const altura = canvas.height * proporcao;
-
-            const x = (larguraPagina - largura) / 2;
-            const y = (alturaPagina - altura) / 2;
-
             pdf.addImage(
                 imagem,
                 "PNG",
-                x,
-                y,
-                largura,
-                altura,
+                0,
+                0,
+                larguraPagina,
+                alturaPagina,
                 undefined,
                 "FAST"
             );
@@ -920,6 +910,45 @@ async function baixarTermoAssinado() {
             iframe.remove();
         }
     }
+}
+
+function paginarDocumentoParaPDF(documento) {
+    const paginasOriginais = Array.from(documento.querySelectorAll(".document-page"));
+
+    paginasOriginais.forEach(paginaOriginal => {
+        const conteudoOriginal = paginaOriginal.querySelector(":scope > .document-content");
+        if (!conteudoOriginal) return;
+
+        const equipamentos = conteudoOriginal.querySelector(":scope > #equipamentosDocumento");
+        if (equipamentos) {
+            Array.from(equipamentos.children).forEach(bloco => {
+                conteudoOriginal.insertBefore(bloco, equipamentos);
+            });
+            equipamentos.remove();
+        }
+
+        const itens = Array.from(conteudoOriginal.children);
+        if (!itens.length) return;
+
+        conteudoOriginal.replaceChildren();
+        let paginaAtual = paginaOriginal;
+        let conteudoAtual = conteudoOriginal;
+
+        itens.forEach(item => {
+            conteudoAtual.appendChild(item);
+            if (paginaAtual.scrollHeight <= paginaAtual.clientHeight + 1 || conteudoAtual.children.length === 1) return;
+
+            conteudoAtual.removeChild(item);
+            const proximaPagina = paginaOriginal.cloneNode(false);
+            const proximoConteudo = documento.createElement("div");
+            proximoConteudo.className = "document-content";
+            proximaPagina.appendChild(proximoConteudo);
+            paginaAtual.parentNode.insertBefore(proximaPagina, paginaAtual.nextSibling);
+            paginaAtual = proximaPagina;
+            conteudoAtual = proximoConteudo;
+            conteudoAtual.appendChild(item);
+        });
+    });
 }
 
 

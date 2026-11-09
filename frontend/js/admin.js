@@ -1673,6 +1673,19 @@ async function baixarTermoSelecionado() {
 
             iframeDocument.close();
 
+            const estiloExportacao = iframeDocument.createElement("style");
+            estiloExportacao.textContent = `
+                .document-page {
+                    height: 297mm !important;
+                    min-height: 297mm !important;
+                    max-height: 297mm !important;
+                    padding: 22mm 20mm 20mm !important;
+                    box-sizing: border-box !important;
+                    overflow: hidden !important;
+                }
+            `;
+            iframeDocument.head.appendChild(estiloExportacao);
+
 
             await esperarCarregamentoIframe(
                 iframe
@@ -1696,6 +1709,8 @@ async function baixarTermoSelecionado() {
                 resolve =>
                     setTimeout(resolve, 300)
             );
+
+            paginarDocumentoParaPDF(iframeDocument);
 
 
             const paginas =
@@ -1728,22 +1743,11 @@ async function baixarTermoSelecionado() {
                         true
                 });
 
-            const margem =
-                12;
-
             const larguraPagina =
                 210;
 
             const alturaPagina =
                 297;
-
-            const larguraConteudo =
-                larguraPagina -
-                margem * 2;
-
-            const alturaConteudo =
-                alturaPagina -
-                margem * 2;
 
             for (
                 let i = 0;
@@ -1817,11 +1821,11 @@ async function baixarTermoSelecionado() {
 
                 pdf.addImage(
                     imagem,
-                    "JPEG",
-                    margem,
-                    margem,
-                    larguraConteudo,
-                    alturaConteudo,
+                    "PNG",
+                    0,
+                    0,
+                    larguraPagina,
+                    alturaPagina,
                     undefined,
                     "FAST"
                 );
@@ -1860,6 +1864,45 @@ async function baixarTermoSelecionado() {
             "Não foi possível gerar o PDF."
         );
     }
+}
+
+function paginarDocumentoParaPDF(documento) {
+    const paginasOriginais = Array.from(documento.querySelectorAll(".document-page"));
+
+    paginasOriginais.forEach(paginaOriginal => {
+        const conteudoOriginal = paginaOriginal.querySelector(":scope > .document-content");
+        if (!conteudoOriginal) return;
+
+        const equipamentos = conteudoOriginal.querySelector(":scope > #equipamentosDocumento");
+        if (equipamentos) {
+            Array.from(equipamentos.children).forEach(bloco => {
+                conteudoOriginal.insertBefore(bloco, equipamentos);
+            });
+            equipamentos.remove();
+        }
+
+        const itens = Array.from(conteudoOriginal.children);
+        if (!itens.length) return;
+
+        conteudoOriginal.replaceChildren();
+        let paginaAtual = paginaOriginal;
+        let conteudoAtual = conteudoOriginal;
+
+        itens.forEach(item => {
+            conteudoAtual.appendChild(item);
+            if (paginaAtual.scrollHeight <= paginaAtual.clientHeight + 1 || conteudoAtual.children.length === 1) return;
+
+            conteudoAtual.removeChild(item);
+            const proximaPagina = paginaOriginal.cloneNode(false);
+            const proximoConteudo = documento.createElement("div");
+            proximoConteudo.className = "document-content";
+            proximaPagina.appendChild(proximoConteudo);
+            paginaAtual.parentNode.insertBefore(proximaPagina, paginaAtual.nextSibling);
+            paginaAtual = proximaPagina;
+            conteudoAtual = proximoConteudo;
+            conteudoAtual.appendChild(item);
+        });
+    });
 }
 
 function carregarBiblioteca(
