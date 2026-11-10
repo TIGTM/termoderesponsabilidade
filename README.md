@@ -1,6 +1,8 @@
-# TermoTI — Sistema de Termos de Responsabilidade
+# Sistema de Termos de Responsabilidade
 
 Sistema web para gerenciamento de equipamentos e termos de responsabilidade, com interface web, API ASP.NET Core 10 e banco de dados SQL Server 2022.
+
+Consulte a [documentação completa do sistema](docs/DOCUMENTACAO.md) para instalação, configuração, fluxos, segurança, testes e manutenção.
 
 ## Requisitos
 
