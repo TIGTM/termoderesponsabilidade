@@ -54,7 +54,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 function obterLocalizacao() {
     return new Promise((resolve, reject) => {
         if (!navigator.geolocation) {
-            reject(new Error("Este navegador não suporta localização."));
+            const erro = new Error("Este navegador não oferece suporte à localização necessária para assinar.");
+            erro.bloqueiaAssinatura = true;
+            reject(erro);
             return;
         }
 
@@ -81,7 +83,9 @@ function obterLocalizacao() {
                     mensagem = "A localização demorou muito para responder.";
                 }
 
-                reject(new Error(mensagem));
+                const erroLocalizacao = new Error(mensagem);
+                erroLocalizacao.code = erro.code;
+                reject(erroLocalizacao);
             },
             {
                 enableHighAccuracy: false,
@@ -1276,6 +1280,14 @@ async function finalizarAssinatura() {
         try {
             localizacao = await obterLocalizacao();
         } catch (erroLocalizacao) {
+            if (erroLocalizacao.bloqueiaAssinatura || erroLocalizacao.code === 1) {
+                mostrarToast(
+                    "Permita o acesso à localização nas configurações do navegador para assinar o termo.",
+                    "erro"
+                );
+                return;
+            }
+
             localizacaoIndisponivel = true;
             console.warn("Localização indisponível; a assinatura será salva sem coordenadas:", erroLocalizacao);
         }
