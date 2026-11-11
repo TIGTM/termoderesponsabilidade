@@ -288,7 +288,7 @@ public class TermosController : ControllerBase
 
     [Authorize(AuthenticationSchemes = ColaboradorScheme)]
     [HttpPost("{id:int}/solicitar-codigo-assinatura")]
-    public async Task<IActionResult> SolicitarCodigoAssinatura(int id)
+    public async Task<IActionResult> SolicitarCodigoAssinatura(int id, [FromBody] SolicitarCodigoAssinaturaDto dto)
     {
         if (!TentarObterColaboradorAutenticado(out var colaboradorId)) return Unauthorized();
         var termo = await _context.Termos.FirstOrDefaultAsync(t => t.Id == id && t.ColaboradorId == colaboradorId);
@@ -297,8 +297,9 @@ public class TermosController : ControllerBase
         if (string.IsNullOrWhiteSpace(termo.DocumentoHTML)) return BadRequest(new { mensagem = "O documento do termo não está disponível." });
 
         var colaborador = await _context.Colaboradores.FindAsync(colaboradorId);
-        if (colaborador?.EmailValidadoEm == null || !EmailAutorizacaoService.EmailValido(colaborador.Email))
-            return BadRequest(new { mensagem = "Valide seu e-mail antes de pedir o código de assinatura." });
+        var email = ColaboradorEmailController.NormalizarEmail(dto.Email);
+        if (colaborador == null || !EmailAutorizacaoService.EmailValido(email))
+            return BadRequest(new { mensagem = "Informe um e-mail válido para receber o código de assinatura." });
 
         var agora = DateTime.UtcNow;
         var ultimo = await _context.CodigosAutorizacao.Where(c => c.TermoId == id && c.Finalidade == FinalidadeAssinatura && c.UsadoEm == null)
@@ -314,7 +315,7 @@ public class TermosController : ControllerBase
             ColaboradorId = colaboradorId,
             TermoId = id,
             Finalidade = FinalidadeAssinatura,
-            Email = ColaboradorEmailController.NormalizarEmail(colaborador.Email),
+            Email = email,
             DocumentoHash = CalcularHash(termo.DocumentoHTML),
             CriadoEm = agora,
             ExpiraEm = agora.AddMinutes(15)
@@ -360,6 +361,10 @@ public class TermosController : ControllerBase
             return BadRequest(new { mensagem = "Código inválido. Confira o e-mail e tente novamente." });
         }
 
+        var colaborador = await _context.Colaboradores.FindAsync(colaboradorId);
+        if (colaborador == null) return Unauthorized();
+        colaborador.Email = desafio.Email;
+        colaborador.EmailValidadoEm = DateTime.UtcNow;
         desafio.ConfirmadoEm = DateTime.UtcNow;
         await _context.SaveChangesAsync();
         await transacao.CommitAsync();

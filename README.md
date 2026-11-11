@@ -117,7 +117,7 @@ A associação ignora acentos, caixa e partículas (de, da, dos), exige o mesmo 
 
 ## Validação por e-mail e assinatura
 
-Antes de assinar, o colaborador informa um e-mail pessoal e valida sua posse com um código de seis dígitos, válido por quinze minutos. Para cada assinatura é gerado um novo código, de uso único, vinculado ao colaborador, ao termo e ao conteúdo do documento. A área para desenhar a assinatura só é exibida após a confirmação desse código; a assinatura final o consome. O código é armazenado somente como hash, expira após cinco tentativas inválidas e não pode ser reutilizado.
+Para assinar, o colaborador informa um e-mail pessoal e recebe um único código de seis dígitos, válido por quinze minutos. A confirmação desse código valida o e-mail e autoriza a assinatura do termo, vinculando o código ao colaborador, ao termo e ao conteúdo do documento. Depois da confirmação, a área de desenho da assinatura é exibida; a assinatura final consome o código. O código é armazenado somente como hash, expira após cinco tentativas inválidas e não pode ser reutilizado.
 
 O envio usa o Microsoft Graph com uma caixa de correio institucional. Registre uma aplicação no Microsoft Entra ID, conceda e aprove a permissão de aplicativo **Microsoft Graph / Mail.Send**, restrinja a aplicação à caixa indicada quando a política da organização permitir, e preencha no ambiente da API:
 

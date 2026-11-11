@@ -402,7 +402,7 @@
                             <div class="assinatura-bloco">
                                 <div class="assinatura-imagem-container">
                                     <img id="assinaturaDeclaracao" class="assinatura-imagem"
-                                        alt="Assinatura do representante do comodatário">
+                                        alt="Assinatura eletrônica do comodatário">
                                 </div>
 
                                 <div class="linha-assinatura"></div>
@@ -418,6 +418,15 @@
                                     CNPJ:
                                     <span id="assinaturaCPFDeclaracao">CNPJ</span>
                                 </span>
+                            </div>
+
+                            <div class="assinatura-bloco assinatura-fisica">
+                                <div class="linha-assinatura"></div>
+                                <strong>
+                                    COMODATÁRIO —
+                                    <span id="assinaturaNomeFisica">Nome do representante</span>
+                                </strong>
+                                <span>CNPJ: <span id="assinaturaCPFFisica">CNPJ</span></span>
                             </div>
 
                         </div>
@@ -471,28 +480,18 @@
         <section class="assinatura-area">
             <section class="email-autorizacao" aria-labelledby="tituloEmailAutorizacao">
                 <div>
-                    <h3 id="tituloEmailAutorizacao">Confirmação por e-mail</h3>
-                    <p>Valide um e-mail para receber o código necessário para assinar este termo.</p>
-                </div>
-                <div id="emailJaValidado" class="email-validado hidden">
-                    <span>E-mail validado: <strong id="emailMascarado"></strong></span>
-                    <button type="button" class="btn-secondary" id="btnAlterarEmail">Alterar e-mail</button>
+                    <h3 id="tituloEmailAutorizacao">Confirme sua assinatura por e-mail</h3>
+                    <p>Informe seu e-mail e confirme o código enviado. Depois disso, você já poderá desenhar sua assinatura.</p>
                 </div>
                 <form id="formEmailAutorizacao" novalidate>
                     <label for="emailAutorizacao">Seu e-mail pessoal</label>
                     <div class="email-autorizacao-acoes">
-                        <input type="email" id="emailAutorizacao" autocomplete="email" maxlength="254" aria-describedby="mensagemEmailAutorizacao" placeholder="nome@exemplo.com">
-                        <button type="submit" class="btn-secondary" id="btnEnviarCodigoEmail">Enviar código</button>
-                    </div>
-                    <div id="areaCodigoEmail" class="codigo-email hidden">
-                        <label for="codigoEmail">Código recebido por e-mail</label>
-                        <input type="text" id="codigoEmail" inputmode="numeric" autocomplete="one-time-code" maxlength="6" aria-describedby="mensagemEmailAutorizacao" placeholder="000000">
-                        <button type="button" class="btn-primary" id="btnConfirmarEmail">Validar e-mail</button>
+                        <input type="email" id="emailAutorizacao" autocomplete="email" maxlength="254" aria-describedby="mensagemEmailAutorizacao" placeholder="nome@exemplo.com" required>
+                        <button type="submit" class="btn-primary" id="btnAssinar">Enviar código para assinar</button>
                     </div>
                     <p id="mensagemEmailAutorizacao" role="status" aria-live="polite"></p>
                 </form>
             </section>
-            <div class="assinatura-actions"><button type="button" class="btn-primary" id="btnAssinar">Receber código para assinar</button></div>
             <div id="areaConfirmacaoAssinatura" class="confirmacao-assinatura hidden" aria-live="polite">
                 <h3>Confirme o código</h3>
                 <p id="orientacaoCodigoAssinatura"></p>

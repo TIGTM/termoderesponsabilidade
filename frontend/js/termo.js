@@ -8,7 +8,6 @@ let termoJaAssinado = false;
 let termoAtual = null;
 let tipoTermoAtual = "CPF";
 let documentoInformado = "";
-let emailAutorizacaoValidado = false;
 let autorizacaoPendente = null;
 
 let razaoSocialCNPJ = "";
@@ -86,8 +85,8 @@ function obterLocalizacao() {
             },
             {
                 enableHighAccuracy: false,
-                timeout: 10000,
-                maximumAge: 60000
+                timeout: 15000,
+                maximumAge: 300000
             }
         );
     });
@@ -604,6 +603,9 @@ function limparImagemAssinatura() {
         ),
         document.getElementById(
             "assinaturaGuia"
+        ),
+        document.getElementById(
+            "assinaturaDeclaracao"
         )
     ];
 
@@ -659,18 +661,6 @@ function configurarBotoes() {
         );
     }
 
-    const btnAssinar =
-        document.getElementById(
-            "btnAssinar"
-        );
-
-    if (btnAssinar) {
-        btnAssinar.addEventListener(
-            "click",
-            assinarTermo
-        );
-    }
-
     document.getElementById("btnConfirmarAssinatura")?.addEventListener(
         "click",
         confirmarAssinatura
@@ -715,16 +705,7 @@ function configurarBotoes() {
 }
 
 function configurarEmailAutorizacao() {
-    document.getElementById("formEmailAutorizacao")?.addEventListener("submit", solicitarValidacaoEmail);
-    document.getElementById("btnConfirmarEmail")?.addEventListener("click", confirmarValidacaoEmail);
-    document.getElementById("btnAlterarEmail")?.addEventListener("click", () => {
-        emailAutorizacaoValidado = false;
-        document.getElementById("emailJaValidado")?.classList.add("hidden");
-        document.getElementById("formEmailAutorizacao")?.classList.remove("hidden");
-        document.getElementById("areaCodigoEmail")?.classList.add("hidden");
-        const input = document.getElementById("emailAutorizacao");
-        if (input) { input.value = ""; input.focus(); }
-    });
+    document.getElementById("formEmailAutorizacao")?.addEventListener("submit", assinarTermo);
 }
 
 async function carregarEmailAutorizacao() {
@@ -732,77 +713,17 @@ async function carregarEmailAutorizacao() {
         const resposta = await fetch(`${API_URL}/colaborador-email`, { credentials: "include", cache: "no-store" });
         if (!resposta.ok) throw new Error("Não foi possível consultar o e-mail de confirmação.");
         const dados = await resposta.json();
-        emailAutorizacaoValidado = Boolean(dados.validado);
-        if (emailAutorizacaoValidado) mostrarEmailValidado(dados.emailMascarado);
+        const campoEmail = document.getElementById("emailAutorizacao");
+        if (campoEmail && dados.email) campoEmail.value = dados.email;
     } catch (erro) {
         console.error("Erro ao carregar e-mail de confirmação:", erro);
         definirMensagemEmail(erro.message || "Não foi possível consultar o e-mail de confirmação.");
     }
 }
 
-function mostrarEmailValidado(emailMascarado) {
-    document.getElementById("emailMascarado").textContent = emailMascarado || "e-mail validado";
-    document.getElementById("emailJaValidado")?.classList.remove("hidden");
-    document.getElementById("formEmailAutorizacao")?.classList.add("hidden");
-}
-
 function definirMensagemEmail(mensagem) {
     const campo = document.getElementById("mensagemEmailAutorizacao");
     if (campo) campo.textContent = mensagem;
-}
-
-async function solicitarValidacaoEmail(evento) {
-    evento.preventDefault();
-    const email = document.getElementById("emailAutorizacao")?.value.trim() || "";
-    const botao = document.getElementById("btnEnviarCodigoEmail");
-    if (!/^\S+@\S+\.\S+$/.test(email)) {
-        definirMensagemEmail("Informe um e-mail válido.");
-        document.getElementById("emailAutorizacao")?.focus();
-        return;
-    }
-    botao.disabled = true;
-    definirMensagemEmail("Enviando código...");
-    try {
-        const resposta = await fetch(`${API_URL}/colaborador-email/solicitar-validacao`, {
-            method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email })
-        });
-        if (!resposta.ok) throw new Error(await obterMensagemErro(resposta));
-        const dados = await resposta.json();
-        document.getElementById("areaCodigoEmail")?.classList.remove("hidden");
-        definirMensagemEmail(`Código enviado para ${dados.emailMascarado}.`);
-        document.getElementById("codigoEmail")?.focus();
-    } catch (erro) {
-        definirMensagemEmail(erro.message || "Não foi possível enviar o código.");
-    } finally {
-        botao.disabled = false;
-    }
-}
-
-async function confirmarValidacaoEmail() {
-    const email = document.getElementById("emailAutorizacao")?.value.trim() || "";
-    const codigo = document.getElementById("codigoEmail")?.value.trim() || "";
-    const botao = document.getElementById("btnConfirmarEmail");
-    if (!/^\d{6}$/.test(codigo)) {
-        definirMensagemEmail("Informe o código de 6 dígitos recebido por e-mail.");
-        document.getElementById("codigoEmail")?.focus();
-        return;
-    }
-    botao.disabled = true;
-    try {
-        const resposta = await fetch(`${API_URL}/colaborador-email/confirmar-validacao`, {
-            method: "POST", credentials: "include", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, codigo })
-        });
-        if (!resposta.ok) throw new Error(await obterMensagemErro(resposta));
-        const dados = await resposta.json();
-        emailAutorizacaoValidado = true;
-        if (colaborador) colaborador.email = email;
-        mostrarEmailValidado(dados.emailMascarado);
-        mostrarToast("E-mail validado. Agora você pode pedir o código para assinar.", "sucesso");
-    } catch (erro) {
-        definirMensagemEmail(erro.message || "Não foi possível validar o e-mail.");
-    } finally {
-        botao.disabled = false;
-    }
 }
 
 function configurarDocumentos() {
@@ -1067,13 +988,16 @@ function bloquearDocumento() {
     });
 }
 
-async function assinarTermo() {
+async function assinarTermo(evento) {
+    evento?.preventDefault();
+
     if (termoJaAssinado) {
         return;
     }
 
-    if (!emailAutorizacaoValidado) {
-        mostrarToast("Valide seu e-mail antes de pedir o código de assinatura.", "erro");
+    const email = document.getElementById("emailAutorizacao")?.value.trim() || "";
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+        definirMensagemEmail("Informe um e-mail válido para receber o código.");
         document.getElementById("emailAutorizacao")?.focus();
         return;
     }
@@ -1096,7 +1020,6 @@ async function assinarTermo() {
     }
 
     let dadosDocumento;
-    let localizacao;
 
     try {
         dadosDocumento =
@@ -1131,15 +1054,16 @@ async function assinarTermo() {
     let termoId =
         termoAtual?.id;
 
+    const botao = document.getElementById("btnAssinar");
+    if (botao?.disabled) return;
+    if (botao) {
+        botao.disabled = true;
+        botao.setAttribute("aria-busy", "true");
+        botao.textContent = "Enviando código...";
+    }
+    definirMensagemEmail("Preparando o termo e enviando o código...");
+
     try {
-        mostrarToast(
-            "Obtendo localização...",
-            "info"
-        );
-
-        localizacao =
-            await obterLocalizacao();
-
         if (!termoId) {
             const respostaCriacao = await fetch(
                 `${API_URL}/termos`,
@@ -1220,7 +1144,12 @@ async function assinarTermo() {
 
         const respostaCodigo = await fetch(
             `${API_URL}/termos/${termoId}/solicitar-codigo-assinatura`,
-            { method: "POST", credentials: "include" }
+            {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email })
+            }
         );
         if (!respostaCodigo.ok) {
             throw new Error(await obterMensagemErro(respostaCodigo));
@@ -1230,9 +1159,11 @@ async function assinarTermo() {
         autorizacaoPendente = {
             termoId,
             dadosDocumento,
-            localizacao,
+            email,
             codigoAutorizacaoId: dadosCodigo.codigoAutorizacaoId
         };
+        document.getElementById("formEmailAutorizacao")?.classList.add("hidden");
+        definirMensagemEmail(`Código enviado para ${dadosCodigo.emailMascarado}.`);
         document.getElementById("areaConfirmacaoAssinatura")?.classList.remove("hidden");
         document.getElementById("orientacaoCodigoAssinatura").textContent =
             `Enviamos um código de 6 dígitos para ${dadosCodigo.emailMascarado}. Ele expira em 15 minutos.`;
@@ -1249,6 +1180,12 @@ async function assinarTermo() {
             "Não foi possível salvar o termo.",
             "erro"
         );
+    } finally {
+        if (botao) {
+            botao.disabled = false;
+            botao.removeAttribute("aria-busy");
+            botao.textContent = "Enviar código para assinar";
+        }
     }
 }
 
@@ -1257,7 +1194,12 @@ async function reenviarCodigoAssinatura() {
 
     const resposta = await fetch(
         `${API_URL}/termos/${autorizacaoPendente.termoId}/solicitar-codigo-assinatura`,
-        { method: "POST", credentials: "include" }
+        {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: autorizacaoPendente.email })
+        }
     );
 
     if (!resposta.ok) {
@@ -1299,6 +1241,7 @@ async function confirmarAssinatura() {
         });
 
         if (!resposta.ok) throw new Error(await obterMensagemErro(resposta));
+        if (colaborador) colaborador.email = autorizacaoPendente.email;
         document.getElementById("areaConfirmacaoAssinatura").classList.add("hidden");
         document.getElementById("areaDesenhoAssinatura").classList.remove("hidden");
         document.getElementById("canvasAssinatura")?.focus();
@@ -1319,14 +1262,25 @@ async function finalizarAssinatura() {
 
     const botao = document.getElementById("btnFinalizarAssinatura");
     const dados = autorizacaoPendente.dadosDocumento;
-    const localizacao = autorizacaoPendente.localizacao;
+    let localizacao = null;
+    let localizacaoIndisponivel = false;
     assinaturaDataURL = canvas.toDataURL("image/png");
     aplicarAssinatura(assinaturaDataURL);
     const agora = new Date();
     preencherDataAssinatura(agora);
     botao.disabled = true;
+    botao.setAttribute("aria-busy", "true");
+    botao.textContent = "Aguardando localização...";
 
     try {
+        try {
+            localizacao = await obterLocalizacao();
+        } catch (erroLocalizacao) {
+            localizacaoIndisponivel = true;
+            console.warn("Localização indisponível; a assinatura será salva sem coordenadas:", erroLocalizacao);
+        }
+
+        botao.textContent = "Salvando assinatura...";
         const resposta = await fetch(`${API_URL}/termos/${autorizacaoPendente.termoId}/assinar`, {
             method: "POST",
             credentials: "include",
@@ -1334,9 +1288,9 @@ async function finalizarAssinatura() {
             body: JSON.stringify({
                 codigoAutorizacaoId: autorizacaoPendente.codigoAutorizacaoId,
                 assinatura: assinaturaDataURL,
-                latitude: localizacao.latitude,
-                longitude: localizacao.longitude,
-                precisaoLocalizacao: localizacao.precisaoLocalizacao,
+                latitude: localizacao?.latitude ?? null,
+                longitude: localizacao?.longitude ?? null,
+                precisaoLocalizacao: localizacao?.precisaoLocalizacao ?? null,
                 tipoDocumento: dados.tipoDocumento,
                 nomeDocumento: dados.nomeDocumento,
                 documentoFrente: dados.documentoFrente,
@@ -1358,11 +1312,18 @@ async function finalizarAssinatura() {
         document.getElementById("areaTermoAssinado").classList.remove("hidden");
         document.getElementById("areaDesenhoAssinatura").classList.add("hidden");
         autorizacaoPendente = null;
-        mostrarToast("Termo assinado e salvo com sucesso.", "sucesso");
+        mostrarToast(
+            localizacaoIndisponivel
+                ? "Termo assinado. A localização não foi registrada, mas o IP foi salvo."
+                : "Termo assinado e salvo com sucesso.",
+            localizacaoIndisponivel ? "info" : "sucesso"
+        );
     } catch (erro) {
         mostrarToast(erro.message || "Não foi possível concluir a assinatura.", "erro");
     } finally {
         botao.disabled = false;
+        botao.removeAttribute("aria-busy");
+        botao.textContent = "Assinar termo";
     }
 }
 

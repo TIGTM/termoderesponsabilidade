@@ -77,9 +77,9 @@ A associacao de nomes ignora acentos, caixa e particulas como `de`, `da` e `dos`
 
 ## Validacao por e-mail e assinatura
 
-O e-mail pessoal e validado com codigo de seis digitos. O codigo expira em 15 minutos, e armazenado somente como hash, aceita ate cinco tentativas invalidas e e consumido apos o uso.
+Para assinar, o colaborador informa um e-mail pessoal e recebe um unico codigo de seis digitos, valido por 15 minutos. A confirmacao desse codigo valida o e-mail e autoriza a assinatura do termo.
 
-Para cada assinatura, o codigo e vinculado ao colaborador, ao termo e ao hash do documento. A area de desenho so aparece apos a confirmacao. Se o termo mudar, o codigo e rejeitado e outro deve ser solicitado.
+O codigo e armazenado somente como hash, aceita ate cinco tentativas invalidas e e vinculado ao colaborador, ao termo e ao hash do documento. A area de desenho aparece apos a confirmacao. Se o termo mudar, o codigo e rejeitado e outro deve ser solicitado; a assinatura final consome o codigo.
 
 O envio usa Microsoft Graph com uma caixa institucional. Sem as variaveis do Graph, a assinatura nao e liberada.
 
