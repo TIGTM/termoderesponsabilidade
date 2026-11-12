@@ -258,9 +258,10 @@ function preencherDocumento() {
         tipoTermoAtual === "CNPJ"
             ? documentoInformado
             : colaborador.cpf;
+    const documentoTermo = formatarDocumentoTermo(documento);
 
     definirTexto("docNome", nomeTermo);
-    definirTexto("docCPF", documento);
+    definirTexto("docCPF", documentoTermo);
 
     definirTexto("docCEP", colaborador.cep);
     definirTexto("docRua", colaborador.rua);
@@ -291,12 +292,23 @@ function preencherDocumento() {
     definirTexto("anoDeclaracao", agora.getFullYear());
 
 
-    definirTexto("assinaturaCPFContrato", documento);
-    definirTexto("assinaturaCPFGuia", documento);
-    definirTexto("assinaturaCPFDeclaracao", documento);
-    definirTexto("assinaturaCPFFisica", documento);
+    definirTexto("assinaturaCPFContrato", documentoTermo);
+    definirTexto("assinaturaCPFGuia", documentoTermo);
+    definirTexto("assinaturaCPFDeclaracao", documentoTermo);
+    definirTexto("assinaturaCPFFisica", documentoTermo);
 
     renderizarEquipamentosDocumento();
+}
+
+function formatarDocumentoTermo(valor) {
+    const numeros = String(valor || "").replace(/\D/g, "");
+    if (numeros.length === 11) {
+        return numeros.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+    }
+    if (numeros.length === 14) {
+        return numeros.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+    }
+    return valor || "";
 }
 
 function definirTexto(id, valor) {
