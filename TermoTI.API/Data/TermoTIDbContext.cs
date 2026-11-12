@@ -26,7 +26,7 @@ public class TermoTIDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<ContaColaborador>().Property(c => c.CPF).HasMaxLength(11);
+        modelBuilder.Entity<ContaColaborador>().Property(c => c.CPF).HasMaxLength(14);
         modelBuilder.Entity<ContaColaborador>().HasIndex(c => c.CPF).IsUnique();
         modelBuilder.Entity<ContaColaborador>().HasIndex(c => c.ColaboradorId).IsUnique();
         modelBuilder.Entity<ContaColaborador>().HasOne<Colaborador>().WithOne()

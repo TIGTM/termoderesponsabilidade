@@ -109,9 +109,9 @@ docker compose ps
 
 ## Acesso individual dos colaboradores
 
-Na página inicial, **Colaborador** abre `login.html?perfil=colaborador`. O usuário informa nome completo e CPF válido; no primeiro acesso cria uma senha de 8 a 128 caracteres, nos seguintes utiliza a própria senha. Após autenticação, `colaborador.html` carrega os dados da sessão e os equipamentos, sem seleção de nomes.
+Na página inicial, **Colaborador** abre `login.html?perfil=colaborador`. O usuário informa nome completo e CPF ou CNPJ válido; no primeiro acesso cria uma senha de 8 a 128 caracteres, nos seguintes utiliza o mesmo documento e a própria senha. Após autenticação, `colaborador.html` carrega os dados da sessão e os equipamentos, sem seleção de nomes.
 
-A migration `AddContaColaborador` cria uma conta por CPF e por colaborador, com senha protegida por PasswordHasher. É aplicada pela API na próxima inicialização. O cadastro administrativo de pessoas continua separado da criação da senha pelo próprio colaborador. A configuração antiga `TermoTI:ColaboradorSenha` não é mais utilizada.
+A migration `AddContaColaborador` cria uma conta por CPF ou CNPJ e por colaborador, com senha protegida por PasswordHasher. É aplicada pela API na próxima inicialização. O cadastro administrativo de pessoas continua separado da criação da senha pelo próprio colaborador. A configuração antiga `TermoTI:ColaboradorSenha` não é mais utilizada.
 
 A associação ignora acentos, caixa e partículas (de, da, dos), exige o mesmo primeiro nome e os sobrenomes cadastrados na mesma ordem e permite nomes intermediários. Exemplo: João Silva corresponde a João Carlos da Silva. Não corrige erros de digitação nem escolhe entre homônimos. Quando há ambiguidade, divergência de CPF ou cadastro já associado, o usuário recebe orientação para procurar o TI.
 

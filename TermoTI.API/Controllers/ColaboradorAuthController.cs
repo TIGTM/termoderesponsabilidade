@@ -65,7 +65,7 @@ public class ColaboradorAuthController(TermoTIDbContext context) : ControllerBas
         try { await context.SaveChangesAsync(); }
         catch (DbUpdateException)
         {
-            return Conflict(new { mensagem = "Não foi possível concluir o cadastro. Volte e tente entrar com seu CPF." });
+            return Conflict(new { mensagem = "Não foi possível concluir o cadastro. Volte e tente entrar com seu CPF ou CNPJ." });
         }
         await Entrar(conta);
         return Ok(new { mensagem = "Cadastro realizado." });
