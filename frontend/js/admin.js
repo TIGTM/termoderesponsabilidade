@@ -1235,9 +1235,38 @@ function criarDocumentoTermoHTML(
     const caminhoCSS =
         obterCaminhoCSSDoTermo();
 
-    const documento =
+    let documento =
         termo?.documentoHTML ||
         "";
+
+    if (documento && termo?.assinatura) {
+        const assinatura = String(termo.assinatura);
+        const assinaturaDataURL = assinatura.startsWith("data:")
+            ? assinatura
+            : `data:image/png;base64,${assinatura}`;
+        const parser = new DOMParser();
+        const documentoParser = parser.parseFromString(
+            documento,
+            "text/html"
+        );
+
+        [
+            "assinaturaContrato",
+            "assinaturaGuia",
+            "assinaturaDeclaracao"
+        ].forEach(id => {
+            const imagem = documentoParser.getElementById(id);
+
+            if (!imagem) {
+                return;
+            }
+
+            imagem.src = assinaturaDataURL;
+            imagem.classList.add("visivel");
+        });
+
+        documento = documentoParser.body.innerHTML;
+    }
 
     return `
 <!DOCTYPE html>
